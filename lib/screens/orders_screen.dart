@@ -381,7 +381,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Orders')),
+      appBar: AppBar(title: const Text('Pedidos')),
       body: Consumer<DataManager>(
         builder: (context, dataManager, child) {
           if (dataManager.requests.isEmpty) {
@@ -396,14 +396,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No orders yet.',
+                    'Sem pedidos ainda.',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: () => _showAddOrderModal(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Create First Order'),
+                    label: const Text('Criar Primeiro Pedido'),
                   ),
                 ],
               ),
@@ -421,17 +421,25 @@ class _OrdersScreenState extends State<OrdersScreen> {
               final client = dataManager.getClientById(req.clientId);
 
               Color statusColor;
+              String statusText;
               switch (req.paymentStatus) {
                 case PaymentStatus.paid:
                   statusColor = Colors.green;
+                  statusText = 'PAGO';
                   break;
                 case PaymentStatus.pending:
                   statusColor = Colors.orange;
+                  statusText = 'PENDENTE';
                   break;
                 case PaymentStatus.partial:
                   statusColor = Colors.blue;
+                  statusText = 'PARCIAL';
                   break;
               }
+
+              String productText = req.type == ProductType.chicken
+                  ? 'FRANGO'
+                  : 'OVOS';
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -443,7 +451,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   title: Row(
                     children: [
                       Text(
-                        req.type.name.toUpperCase(),
+                        productText,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const Spacer(),
@@ -460,9 +468,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 4),
-                      Text('Client: ${client?.name ?? "Unknown"}'),
+                      Text('Cliente: ${client?.name ?? "Desconhecido"}'),
                       Text(
-                        'Qty: ${req.amount} | Date: ${DateFormat('MM/dd/yyyy').format(req.date)}',
+                        'Qtd: ${req.amount} | Data: ${DateFormat('dd/MM/yyyy').format(req.date)}',
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -476,7 +484,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           border: Border.all(color: statusColor),
                         ),
                         child: Text(
-                          req.paymentStatus.name.toUpperCase(),
+                          statusText,
                           style: TextStyle(
                             color: statusColor,
                             fontWeight: FontWeight.bold,

@@ -4,6 +4,7 @@ import '../services/data_manager.dart';
 import '../models/request.dart';
 import 'clients_screen.dart';
 import 'orders_screen.dart';
+import 'settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -20,6 +21,36 @@ class DashboardScreen extends StatelessWidget {
         ),
         backgroundColor: theme.colorScheme.primaryContainer,
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: theme.colorScheme.primary),
+              child: const Text(
+                'Menu',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Início'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Definições'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
       body: Consumer<DataManager>(
         builder: (context, dataManager, child) {
           final totalRequests = dataManager.requests.length;
@@ -29,9 +60,6 @@ class DashboardScreen extends StatelessWidget {
 
           double totalRevenue = 0;
           for (var r in dataManager.requests) {
-            // Only count paid or partial? Or all? Let's count all "value" for now, or just Paid.
-            // Let's assume we want to track expected revenue vs collected.
-            // For simple "Sales", let's sum up everything for now.
             totalRevenue += r.totalPrice;
           }
 
@@ -41,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Overview',
+                  'Resumo',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
@@ -50,7 +78,7 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 _buildSummaryCard(
                   context,
-                  title: 'Total Revenue',
+                  title: 'Receita Total',
                   value: '\$${totalRevenue.toStringAsFixed(2)}',
                   icon: Icons.attach_money,
                   color: Colors.green,
@@ -61,7 +89,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        title: 'Total Orders',
+                        title: 'Total Pedidos',
                         value: '$totalRequests',
                         icon: Icons.shopping_bag_outlined,
                         color: Colors.blue,
@@ -71,7 +99,7 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        title: 'Pending',
+                        title: 'Pendentes',
                         value: '$pendingRequests',
                         icon: Icons.pending_actions,
                         color: Colors.orange,
@@ -81,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 32),
                 Text(
-                  'Quick Actions',
+                  'Ações Rápidas',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -89,7 +117,7 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 _buildActionButton(
                   context,
-                  label: 'Manage Clients',
+                  label: 'Gerir Clientes',
                   icon: Icons.people,
                   onTap: () => Navigator.push(
                     context,
@@ -99,7 +127,7 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildActionButton(
                   context,
-                  label: 'Manage Orders',
+                  label: 'Gerir Pedidos',
                   icon: Icons.list_alt,
                   onTap: () => Navigator.push(
                     context,
