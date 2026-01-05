@@ -3,12 +3,14 @@ class Client {
   final String name;
   final String phoneNumber;
   final String address;
+  String notes;
 
   Client({
     required this.id,
     required this.name,
     required this.phoneNumber,
     required this.address,
+    this.notes = '',
   });
 
   // Factory to create a Client from a Map (e.g., from JSON/DB in future)
@@ -18,6 +20,7 @@ class Client {
       name: map['name'] ?? '',
       phoneNumber: map['phoneNumber'] ?? '',
       address: map['address'] ?? '',
+      notes: map['notes'] ?? '',
     );
   }
 
@@ -28,6 +31,7 @@ class Client {
       'name': name,
       'phoneNumber': phoneNumber,
       'address': address,
+      'notes': notes,
     };
   }
 }

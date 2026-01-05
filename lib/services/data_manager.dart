@@ -42,6 +42,14 @@ class DataManager extends ChangeNotifier {
     }
   }
 
+  void updateClientNotes(String clientId, String notes) {
+    final index = _clients.indexWhere((c) => c.id == clientId);
+    if (index != -1) {
+      _clients[index].notes = notes;
+      notifyListeners();
+    }
+  }
+
   Client? getClientById(String id) {
     try {
       return _clients.firstWhere((c) => c.id == id);

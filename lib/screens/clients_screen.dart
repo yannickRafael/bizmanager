@@ -1,3 +1,4 @@
+import 'client_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
@@ -148,7 +149,14 @@ class _ClientsScreenState extends State<ClientsScreen> {
                       : 'No phone',
                 ),
                 trailing: const Icon(Icons.chevron_right),
-                // TODO: Show client details/history on tap
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ClientDetailsScreen(clientId: client.id),
+                    ),
+                  );
+                },
               );
             },
           );

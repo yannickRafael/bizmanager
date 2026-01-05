@@ -54,6 +54,9 @@ void main() {
 
       expect(manager.clients.length, 1);
       expect(manager.clients.first.name, 'John');
+
+      manager.updateClientNotes('1', 'Has change of \$50');
+      expect(manager.clients.first.notes, 'Has change of \$50');
     });
 
     test('Add Request and Update Status', () {
