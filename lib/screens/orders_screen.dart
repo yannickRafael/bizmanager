@@ -310,28 +310,70 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  void _showPaymentStatusDialog(BuildContext context, Request request) {
+  void _showPaymentDialog(BuildContext context, Request request) {
+    double paymentAmount = 0;
+    final formKey = GlobalKey<FormState>();
+
     showDialog(
       context: context,
-      builder: (ctx) => SimpleDialog(
-        title: const Text('Update Payment Status'),
-        children: PaymentStatus.values
-            .map(
-              (status) => SimpleDialogOption(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Text(status.name.toUpperCase()),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Register Payment'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Total Price: \$${request.totalPrice.toStringAsFixed(2)}'),
+              Text('Already Paid: \$${request.amountPaid.toStringAsFixed(2)}'),
+              const SizedBox(height: 8),
+              Text(
+                'Remaining: \$${(request.totalPrice - request.amountPaid).toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red,
                 ),
-                onPressed: () {
-                  Provider.of<DataManager>(
-                    context,
-                    listen: false,
-                  ).updateRequestStatus(request.id, status);
-                  Navigator.pop(ctx);
-                },
               ),
-            )
-            .toList(),
+              const SizedBox(height: 16),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Amount to Pay',
+                  border: OutlineInputBorder(),
+                  prefixText: '\$',
+                ),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (val) {
+                  if (val == null || double.tryParse(val) == null)
+                    return 'Invalid amount';
+                  if (double.parse(val) <= 0) return 'Must be > 0';
+                  return null;
+                },
+                onSaved: (val) => paymentAmount = double.parse(val!),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                formKey.currentState!.save();
+                Provider.of<DataManager>(
+                  context,
+                  listen: false,
+                ).registerPayment(request.id, paymentAmount);
+                Navigator.pop(ctx);
+              }
+            },
+            child: const Text('Add Payment'),
+          ),
+        ],
       ),
     );
   }
@@ -444,7 +486,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       ),
                     ],
                   ),
-                  onTap: () => _showPaymentStatusDialog(context, req),
+                  onTap: () => _showPaymentDialog(context, req),
                 ),
               );
             },

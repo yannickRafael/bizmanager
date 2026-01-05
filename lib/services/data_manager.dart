@@ -19,10 +19,25 @@ class DataManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateRequestStatus(String requestId, PaymentStatus status) {
+  void registerPayment(String requestId, double amount) {
     final index = _requests.indexWhere((r) => r.id == requestId);
     if (index != -1) {
-      _requests[index].paymentStatus = status;
+      final req = _requests[index];
+      req.amountPaid += amount;
+
+      // Prevent overpayment logic if desired, or just cap it visually.
+      // For now let's assume valid inputs or just cap at totalPrice.
+      if (req.amountPaid > req.totalPrice) {
+        req.amountPaid = req.totalPrice;
+      }
+
+      if (req.amountPaid >= req.totalPrice) {
+        req.paymentStatus = PaymentStatus.paid;
+      } else if (req.amountPaid > 0) {
+        req.paymentStatus = PaymentStatus.partial;
+      } else {
+        req.paymentStatus = PaymentStatus.pending;
+      }
       notifyListeners();
     }
   }

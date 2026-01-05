@@ -71,8 +71,15 @@ void main() {
       expect(manager.requests.length, 1);
       expect(manager.requests.first.paymentStatus, PaymentStatus.pending);
 
-      manager.updateRequestStatus('100', PaymentStatus.paid);
+      // Partial Payment
+      manager.registerPayment('100', 50);
+      expect(manager.requests.first.paymentStatus, PaymentStatus.partial);
+      expect(manager.requests.first.amountPaid, 50);
+
+      // Full Payment
+      manager.registerPayment('100', 50);
       expect(manager.requests.first.paymentStatus, PaymentStatus.paid);
+      expect(manager.requests.first.amountPaid, 100);
     });
   });
 }

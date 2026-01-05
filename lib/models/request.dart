@@ -1,13 +1,6 @@
-enum ProductType {
-  chicken,
-  eggs,
-}
+enum ProductType { chicken, eggs }
 
-enum PaymentStatus {
-  pending,
-  paid,
-  partial,
-}
+enum PaymentStatus { pending, paid, partial }
 
 class Request {
   final String id;
@@ -16,6 +9,8 @@ class Request {
   final double amount; // quantity
   final double totalPrice;
   final DateTime date;
+
+  double amountPaid;
   PaymentStatus paymentStatus;
 
   Request({
@@ -25,6 +20,7 @@ class Request {
     required this.amount,
     required this.totalPrice,
     required this.date,
+    this.amountPaid = 0.0,
     this.paymentStatus = PaymentStatus.pending,
   });
 
@@ -36,6 +32,7 @@ class Request {
       amount: (map['amount'] ?? 0).toDouble(),
       totalPrice: (map['totalPrice'] ?? 0).toDouble(),
       date: DateTime.parse(map['date']),
+      amountPaid: (map['amountPaid'] ?? 0).toDouble(),
       paymentStatus: PaymentStatus.values[map['paymentStatus'] ?? 0],
     );
   }
@@ -48,6 +45,7 @@ class Request {
       'amount': amount,
       'totalPrice': totalPrice,
       'date': date.toIso8601String(),
+      'amountPaid': amountPaid,
       'paymentStatus': paymentStatus.index,
     };
   }
