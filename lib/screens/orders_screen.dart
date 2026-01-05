@@ -5,6 +5,8 @@ import '../models/request.dart';
 import '../models/client.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_contacts/flutter_contacts.dart' as contacts;
+import 'package:permission_handler/permission_handler.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -17,154 +19,293 @@ class _OrdersScreenState extends State<OrdersScreen> {
   final _uuid = const Uuid();
 
   void _showAddOrderModal(BuildContext context) {
-    if (Provider.of<DataManager>(context, listen: false).clients.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please register a client first.')),
-      );
-      return;
-    }
-
-    String? selectedClientId;
+    // Variables for Order
     ProductType selectedType = ProductType.eggs;
     double amount = 0;
     double price = 0;
     DateTime date = DateTime.now();
 
+    // Variables for Client Selection
+    int selectedTab = 0; // 0: Existing, 1: New
+    String? selectedClientId;
+
+    // Variables for New Client
+    String newClientName = '';
+    String newClientPhone = '';
+    String newClientAddress = '';
+
     final formKey = GlobalKey<FormState>();
+
+    // Controllers to update fields programmatically (e.g. after import)
+    final nameController = TextEditingController();
+    final phoneController = TextEditingController();
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          left: 20,
-          right: 20,
-          top: 20,
-        ),
-        child: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'New Order',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Client Dropdown
-              Consumer<DataManager>(
-                builder: (context, data, _) {
-                  return DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Client',
-                      border: OutlineInputBorder(),
-                    ),
-                    value: selectedClientId,
-                    items: data.clients
-                        .map(
-                          (c) => DropdownMenuItem(
-                            value: c.id,
-                            child: Text(c.name),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (val) => selectedClientId = val,
-                    validator: (val) => val == null ? 'Select a client' : null,
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-
-              // Type Dropdown
-              DropdownButtonFormField<ProductType>(
-                decoration: const InputDecoration(
-                  labelText: 'Product',
-                  border: OutlineInputBorder(),
-                ),
-                value: selectedType,
-                items: ProductType.values
-                    .map(
-                      (t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(t.name.toUpperCase()),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (val) {
-                  if (val != null) selectedType = val;
-                },
-              ),
-              const SizedBox(height: 12),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Quantity',
-                        border: OutlineInputBorder(),
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (val) =>
-                          val == null || double.tryParse(val) == null
-                          ? 'Invalid qty'
-                          : null,
-                      onSaved: (val) => amount = double.parse(val!),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: 'Total Price',
-                        border: OutlineInputBorder(),
-                        prefixText: '\$',
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      validator: (val) =>
-                          val == null || double.tryParse(val) == null
-                          ? 'Invalid price'
-                          : null,
-                      onSaved: (val) => price = double.parse(val!),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              FilledButton(
-                onPressed: () {
-                  if (formKey.currentState!.validate()) {
-                    formKey.currentState!.save();
-                    final newRequest = Request(
-                      id: _uuid.v4(),
-                      clientId: selectedClientId!,
-                      type: selectedType,
-                      amount: amount,
-                      totalPrice: price,
-                      date: date,
-                      paymentStatus: PaymentStatus.pending,
-                    );
-                    Provider.of<DataManager>(
-                      context,
-                      listen: false,
-                    ).addRequest(newRequest);
-                    Navigator.pop(ctx);
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          Future<void> _pickContact() async {
+            if (await Permission.contacts.request().isGranted) {
+              final contact = await contacts.FlutterContacts.openExternalPick();
+              if (contact != null) {
+                setState(() {
+                  nameController.text = contact.displayName;
+                  if (contact.phones.isNotEmpty) {
+                    phoneController.text = contact.phones.first.number;
                   }
-                },
-                child: const Text('Create Order'),
+                });
+              }
+            }
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+              left: 20,
+              right: 20,
+              top: 20,
+            ),
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'New Order',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Client Section
+                    Text(
+                      'Client Details',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Toggle between Existing and New
+                    SegmentedButton<int>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 0,
+                          label: Text('Existing'),
+                          icon: Icon(Icons.list),
+                        ),
+                        ButtonSegment(
+                          value: 1,
+                          label: Text('New / Import'),
+                          icon: Icon(Icons.person_add),
+                        ),
+                      ],
+                      selected: {selectedTab},
+                      onSelectionChanged: (Set<int> newSelection) {
+                        setState(() {
+                          selectedTab = newSelection.first;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    if (selectedTab == 0) ...[
+                      // Existing Client Dropdown
+                      Consumer<DataManager>(
+                        builder: (context, data, _) {
+                          final clients = data.clients;
+                          if (clients.isEmpty) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Text(
+                                'No clients found. Please switch to "New" to create one.',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            );
+                          }
+                          return DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Select Client',
+                              border: OutlineInputBorder(),
+                            ),
+                            value: selectedClientId,
+                            items: clients
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c.id,
+                                    child: Text(c.name),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) => selectedClientId = val,
+                            validator: (val) => selectedTab == 0 && val == null
+                                ? 'Select a client'
+                                : null,
+                          );
+                        },
+                      ),
+                    ] else ...[
+                      // New Client Form
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _pickContact,
+                              icon: const Icon(Icons.contacts),
+                              label: const Text('Import from Contacts'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: nameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Client Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (val) =>
+                            selectedTab == 1 && (val == null || val.isEmpty)
+                            ? 'Enter name'
+                            : null,
+                        onSaved: (val) => newClientName = val!.trim(),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.phone,
+                        onSaved: (val) => newClientPhone = val?.trim() ?? '',
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Address',
+                          border: OutlineInputBorder(),
+                        ),
+                        onSaved: (val) => newClientAddress = val?.trim() ?? '',
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+                    Text(
+                      'Order Details',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Product Type
+                    DropdownButtonFormField<ProductType>(
+                      decoration: const InputDecoration(
+                        labelText: 'Product',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: selectedType,
+                      items: ProductType.values
+                          .map(
+                            (t) => DropdownMenuItem(
+                              value: t,
+                              child: Text(t.name.toUpperCase()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setState(() => selectedType = val);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              labelText: 'Quantity',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: (val) =>
+                                val == null || double.tryParse(val) == null
+                                ? 'Invalid qty'
+                                : null,
+                            onSaved: (val) => amount = double.parse(val!),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            decoration: const InputDecoration(
+                              labelText: 'Total Price',
+                              border: OutlineInputBorder(),
+                              prefixText: '\$',
+                            ),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: (val) =>
+                                val == null || double.tryParse(val) == null
+                                ? 'Invalid price'
+                                : null,
+                            onSaved: (val) => price = double.parse(val!),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () {
+                        if (formKey.currentState!.validate()) {
+                          formKey.currentState!.save();
+
+                          final dataManager = Provider.of<DataManager>(
+                            context,
+                            listen: false,
+                          );
+                          String finalClientId;
+
+                          if (selectedTab == 0) {
+                            // Existing
+                            finalClientId = selectedClientId!;
+                          } else {
+                            // Create New Client
+                            finalClientId = _uuid.v4();
+                            final newClient = Client(
+                              id: finalClientId,
+                              name: newClientName,
+                              phoneNumber: newClientPhone,
+                              address: newClientAddress,
+                            );
+                            dataManager.addClient(newClient);
+                          }
+
+                          // Create Order
+                          final newRequest = Request(
+                            id: _uuid.v4(),
+                            clientId: finalClientId,
+                            type: selectedType,
+                            amount: amount,
+                            totalPrice: price,
+                            date: date,
+                            paymentStatus: PaymentStatus.pending,
+                          );
+                          dataManager.addRequest(newRequest);
+                          Navigator.pop(ctx);
+                        }
+                      },
+                      child: const Text('Create Order'),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
