@@ -74,7 +74,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'New Order',
+                      'Novo Pedido',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
@@ -82,7 +82,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
                     // Client Section
                     Text(
-                      'Client Details',
+                      'Detalhes do Cliente',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -92,12 +92,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       segments: const [
                         ButtonSegment(
                           value: 0,
-                          label: Text('Existing'),
+                          label: Text('Existente'),
                           icon: Icon(Icons.list),
                         ),
                         ButtonSegment(
                           value: 1,
-                          label: Text('New / Import'),
+                          label: Text('Novo / Importar'),
                           icon: Icon(Icons.person_add),
                         ),
                       ],
@@ -119,14 +119,14 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             return const Padding(
                               padding: EdgeInsets.all(8.0),
                               child: Text(
-                                'No clients found. Please switch to "New" to create one.',
+                                'Nenhum cliente encontrado. Mude para "Novo" para criar.',
                                 style: TextStyle(color: Colors.red),
                               ),
                             );
                           }
                           return DropdownButtonFormField<String>(
                             decoration: const InputDecoration(
-                              labelText: 'Select Client',
+                              labelText: 'Selecionar Cliente',
                               border: OutlineInputBorder(),
                             ),
                             value: selectedClientId,
@@ -140,7 +140,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                 .toList(),
                             onChanged: (val) => selectedClientId = val,
                             validator: (val) => selectedTab == 0 && val == null
-                                ? 'Select a client'
+                                ? 'Selecione um cliente'
                                 : null,
                           );
                         },
@@ -153,7 +153,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             child: OutlinedButton.icon(
                               onPressed: _pickContact,
                               icon: const Icon(Icons.contacts),
-                              label: const Text('Import from Contacts'),
+                              label: const Text('Importar de Contactos'),
                             ),
                           ),
                         ],
@@ -162,12 +162,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       TextFormField(
                         controller: nameController,
                         decoration: const InputDecoration(
-                          labelText: 'Client Name',
+                          labelText: 'Nome do Cliente',
                           border: OutlineInputBorder(),
                         ),
                         validator: (val) =>
                             selectedTab == 1 && (val == null || val.isEmpty)
-                            ? 'Enter name'
+                            ? 'Insira o nome'
                             : null,
                         onSaved: (val) => newClientName = val!.trim(),
                       ),
@@ -175,7 +175,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       TextFormField(
                         controller: phoneController,
                         decoration: const InputDecoration(
-                          labelText: 'Phone Number',
+                          labelText: 'Número de Telefone',
                           border: OutlineInputBorder(),
                         ),
                         keyboardType: TextInputType.phone,
@@ -184,7 +184,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       const SizedBox(height: 12),
                       TextFormField(
                         decoration: const InputDecoration(
-                          labelText: 'Address',
+                          labelText: 'Endereço',
                           border: OutlineInputBorder(),
                         ),
                         onSaved: (val) => newClientAddress = val?.trim() ?? '',
@@ -193,7 +193,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
                     const SizedBox(height: 24),
                     Text(
-                      'Order Details',
+                      'Detalhes do Pedido',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -201,7 +201,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     // Product Type
                     DropdownButtonFormField<ProductType>(
                       decoration: const InputDecoration(
-                        labelText: 'Product',
+                        labelText: 'Produto',
                         border: OutlineInputBorder(),
                       ),
                       value: selectedType,
@@ -209,7 +209,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           .map(
                             (t) => DropdownMenuItem(
                               value: t,
-                              child: Text(t.name.toUpperCase()),
+                              child: Text(
+                                t == ProductType.chicken ? 'FRANGO' : 'OVOS',
+                              ),
                             ),
                           )
                           .toList(),
@@ -224,7 +226,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         Expanded(
                           child: TextFormField(
                             decoration: const InputDecoration(
-                              labelText: 'Quantity',
+                              labelText: 'Quantidade',
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: const TextInputType.numberWithOptions(
@@ -232,7 +234,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             ),
                             validator: (val) =>
                                 val == null || double.tryParse(val) == null
-                                ? 'Invalid qty'
+                                ? 'Qtd inválida'
                                 : null,
                             onSaved: (val) => amount = double.parse(val!),
                           ),
@@ -241,7 +243,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         Expanded(
                           child: TextFormField(
                             decoration: const InputDecoration(
-                              labelText: 'Total Price',
+                              labelText: 'Preço Total',
                               border: OutlineInputBorder(),
                               prefixText: '\$',
                             ),
@@ -250,7 +252,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             ),
                             validator: (val) =>
                                 val == null || double.tryParse(val) == null
-                                ? 'Invalid price'
+                                ? 'Preço inválido'
                                 : null,
                             onSaved: (val) => price = double.parse(val!),
                           ),
@@ -298,7 +300,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           Navigator.pop(ctx);
                         }
                       },
-                      child: const Text('Create Order'),
+                      child: const Text('Criar Pedido'),
                     ),
                   ],
                 ),
