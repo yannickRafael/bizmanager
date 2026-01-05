@@ -1,3 +1,4 @@
+import '../models/product.dart';
 import 'package:flutter/material.dart';
 import '../models/client.dart';
 import '../models/request.dart';
@@ -5,9 +6,14 @@ import '../models/request.dart';
 class DataManager extends ChangeNotifier {
   final List<Client> _clients = [];
   final List<Request> _requests = [];
+  final List<Product> _products = [
+    Product(id: '1', name: 'Frango', defaultPrice: 10.0),
+    Product(id: '2', name: 'Ovos', defaultPrice: 5.0),
+  ];
 
   List<Client> get clients => List.unmodifiable(_clients);
   List<Request> get requests => List.unmodifiable(_requests);
+  List<Product> get products => List.unmodifiable(_products);
 
   void addClient(Client client) {
     _clients.add(client);
@@ -16,6 +22,16 @@ class DataManager extends ChangeNotifier {
 
   void addRequest(Request request) {
     _requests.add(request);
+    notifyListeners();
+  }
+
+  void addProduct(Product product) {
+    _products.add(product);
+    notifyListeners();
+  }
+
+  void deleteProduct(String id) {
+    _products.removeWhere((p) => p.id == id);
     notifyListeners();
   }
 

@@ -1,3 +1,4 @@
+import '../models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
@@ -20,7 +21,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   void _showAddOrderModal(BuildContext context) {
     // Variables for Order
-    ProductType selectedType = ProductType.eggs;
+    // Variables for Order
+    String? selectedProductName;
     double amount = 0;
     double price = 0;
     DateTime date = DateTime.now();
@@ -198,25 +200,39 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     ),
                     const SizedBox(height: 8),
 
-                    // Product Type
-                    DropdownButtonFormField<ProductType>(
-                      decoration: const InputDecoration(
-                        labelText: 'Produto',
-                        border: OutlineInputBorder(),
-                      ),
-                      value: selectedType,
-                      items: ProductType.values
-                          .map(
-                            (t) => DropdownMenuItem(
-                              value: t,
-                              child: Text(
-                                t == ProductType.chicken ? 'FRANGO' : 'OVOS',
-                              ),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => selectedType = val);
+                    // Product Dropdown
+                    Consumer<DataManager>(
+                      builder: (context, data, _) {
+                        return DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: 'Produto',
+                            border: OutlineInputBorder(),
+                          ),
+                          value: selectedProductName,
+                          items: data.products
+                              .map(
+                                (p) => DropdownMenuItem(
+                                  value: p.name,
+                                  child: Text(p.name.toUpperCase()),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                selectedProductName = val;
+                                // Find product default price
+                                final product = data.products.firstWhere(
+                                  (p) => p.name == val,
+                                );
+                                // Auto update price if amount is set
+                                if (amount > 0) {
+                                  price = amount * product.defaultPrice;
+                                }
+                              });
+                            }
+                          },
+                        );
                       },
                     ),
                     const SizedBox(height: 12),
@@ -232,6 +248,30 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
+                            onChanged: (val) {
+                              if (val.isNotEmpty &&
+                                  double.tryParse(val) != null) {
+                                setState(() {
+                                  amount = double.parse(val);
+                                  // Update price
+                                  if (selectedProductName != null) {
+                                    final data = Provider.of<DataManager>(
+                                      context,
+                                      listen: false,
+                                    );
+                                    final product = data.products.firstWhere(
+                                      (p) => p.name == selectedProductName,
+                                      orElse: () => Product(
+                                        id: '',
+                                        name: '',
+                                        defaultPrice: 0,
+                                      ),
+                                    );
+                                    price = amount * product.defaultPrice;
+                                  }
+                                });
+                              }
+                            },
                             validator: (val) =>
                                 val == null || double.tryParse(val) == null
                                 ? 'Qtd inválida'
@@ -242,6 +282,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextFormField(
+                            // Key to force rebuild when price changes? No, controller is better.
+                            // Using key for simplicity in this context or create a controller.
+                            key: ValueKey(price),
+                            initialValue: price > 0
+                                ? price.toStringAsFixed(2)
+                                : null,
                             decoration: const InputDecoration(
                               labelText: 'Preço Total',
                               border: OutlineInputBorder(),
@@ -272,10 +318,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           String finalClientId;
 
                           if (selectedTab == 0) {
-                            // Existing
                             finalClientId = selectedClientId!;
                           } else {
-                            // Create New Client
                             finalClientId = _uuid.v4();
                             final newClient = Client(
                               id: finalClientId,
@@ -290,7 +334,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           final newRequest = Request(
                             id: _uuid.v4(),
                             clientId: finalClientId,
-                            type: selectedType,
+                            productName: selectedProductName!,
                             amount: amount,
                             totalPrice: price,
                             date: date,
@@ -439,9 +483,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   break;
               }
 
-              String productText = req.type == ProductType.chicken
-                  ? 'FRANGO'
-                  : 'OVOS';
+              String productText = req.productName.toUpperCase();
 
               return Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

@@ -1,3 +1,4 @@
+import 'products_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
@@ -36,6 +37,17 @@ class DashboardScreen extends StatelessWidget {
               leading: const Icon(Icons.home),
               title: const Text('Início'),
               onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.inventory_2),
+              title: const Text('Produtos'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProductsScreen()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.settings),

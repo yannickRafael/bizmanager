@@ -212,9 +212,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                           break;
                       }
 
-                      String productText = order.type == ProductType.chicken
-                          ? 'FRANGO'
-                          : 'OVOS';
+                      String productText = order.productName.toUpperCase();
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
