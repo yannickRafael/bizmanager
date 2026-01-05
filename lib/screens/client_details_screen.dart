@@ -96,7 +96,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             Text(
                               client.phoneNumber.isNotEmpty
                                   ? client.phoneNumber
-                                  : 'No phone',
+                                  : 'Sem telefone',
                             ),
                           ],
                         ),
@@ -112,7 +112,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                             Text(
                               client.address.isNotEmpty
                                   ? client.address
-                                  : 'No address',
+                                  : 'Sem endereço',
                             ),
                           ],
                         ),
@@ -130,7 +130,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     child: Column(
                       children: [
                         const Text(
-                          'Total Debt',
+                          'Dívida Total',
                           style: TextStyle(
                             color: Colors.red,
                             fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
                 // Notes Section
                 Text(
-                  'Notes',
+                  'Notas',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -163,7 +163,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                   controller: _notesController,
                   maxLines: 4,
                   decoration: const InputDecoration(
-                    hintText: 'Add notes here (e.g. has change...)',
+                    hintText: 'Adicionar notas aqui (ex: tem troco...)',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -173,21 +173,21 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                   child: FilledButton.icon(
                     onPressed: _saveNotes,
                     icon: const Icon(Icons.save),
-                    label: const Text('Save Notes'),
+                    label: const Text('Guardar Notas'),
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // Order History
                 Text(
-                  'Order History',
+                  'Histórico de Pedidos',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
                 if (clientOrders.isEmpty)
-                  const Text('No orders found.')
+                  const Text('Nenhum pedido encontrado.')
                 else
                   ListView.builder(
                     shrinkWrap: true,
@@ -196,26 +196,34 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     itemBuilder: (ctx, index) {
                       final order = clientOrders[index];
                       Color statusColor;
+                      String statusText;
                       switch (order.paymentStatus) {
                         case PaymentStatus.paid:
                           statusColor = Colors.green;
+                          statusText = 'PAGO';
                           break;
                         case PaymentStatus.pending:
                           statusColor = Colors.orange;
+                          statusText = 'PENDENTE';
                           break;
                         case PaymentStatus.partial:
                           statusColor = Colors.blue;
+                          statusText = 'PARCIAL';
                           break;
                       }
+
+                      String productText = order.type == ProductType.chicken
+                          ? 'FRANGO'
+                          : 'OVOS';
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           title: Text(
-                            '${order.type.name.toUpperCase()} - \$${order.totalPrice.toStringAsFixed(2)}',
+                            '$productText - \$${order.totalPrice.toStringAsFixed(2)}',
                           ),
                           subtitle: Text(
-                            DateFormat('MM/dd/yyyy').format(order.date),
+                            DateFormat('dd/MM/yyyy').format(order.date),
                           ),
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(
@@ -228,7 +236,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               border: Border.all(color: statusColor),
                             ),
                             child: Text(
-                              order.paymentStatus.name.toUpperCase(),
+                              statusText,
                               style: TextStyle(
                                 color: statusColor,
                                 fontWeight: FontWeight.bold,

@@ -38,7 +38,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'New Client',
+                'Novo Cliente',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -46,18 +46,18 @@ class _ClientsScreenState extends State<ClientsScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: 'Name',
+                  labelText: 'Nome',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (val) =>
-                    val == null || val.isEmpty ? 'Enter a name' : null,
+                    val == null || val.isEmpty ? 'Insira um nome' : null,
                 onSaved: (val) => name = val!.trim(),
               ),
               const SizedBox(height: 12),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: 'Phone',
+                  labelText: 'Telefone',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone),
                 ),
@@ -67,7 +67,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
               const SizedBox(height: 12),
               TextFormField(
                 decoration: const InputDecoration(
-                  labelText: 'Address',
+                  labelText: 'Endereço',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.location_on),
                 ),
@@ -91,7 +91,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                     Navigator.pop(ctx);
                   }
                 },
-                child: const Text('Save Client'),
+                child: const Text('Guardar Cliente'),
               ),
             ],
           ),
@@ -103,7 +103,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Clients')),
+      appBar: AppBar(title: const Text('Clientes')),
       body: Consumer<DataManager>(
         builder: (context, dataManager, child) {
           if (dataManager.clients.isEmpty) {
@@ -118,14 +118,14 @@ class _ClientsScreenState extends State<ClientsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No clients yet.',
+                    'Sem clientes.',
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
                     onPressed: () => _showAddClientModal(context),
                     icon: const Icon(Icons.add),
-                    label: const Text('Add First Client'),
+                    label: const Text('Adicionar Primeiro Cliente'),
                   ),
                 ],
               ),
@@ -146,7 +146,7 @@ class _ClientsScreenState extends State<ClientsScreen> {
                 subtitle: Text(
                   client.phoneNumber.isNotEmpty
                       ? client.phoneNumber
-                      : 'No phone',
+                      : 'Sem telefone',
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
