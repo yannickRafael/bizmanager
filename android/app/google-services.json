@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084987354980",
+    "project_id": "cb-bizmanager",
+    "storage_bucket": "cb-bizmanager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084987354980:android:dd787328126a6b5a359471",
+        "android_client_info": {
+          "package_name": "com.coffebit.bizmanager"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcR2MadtNtDVFwSOm-hGckVLaIgY_Vre4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

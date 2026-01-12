@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
-import '../models/request.dart';
-import '../models/client.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -155,19 +153,19 @@ class StatsScreen extends StatelessWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: topClients.length,
-                    separatorBuilder: (_, __) => const Divider(),
+                    separatorBuilder: (_, _) => const Divider(),
                     itemBuilder: (ctx, index) {
                       final entry = topClients[index];
                       final client = data.getClientById(entry.key);
                       return ListTile(
                         leading: CircleAvatar(
-                          child: Text('${index + 1}'),
                           backgroundColor: index == 0
                               ? Colors.amber
                               : Colors.grey[300],
                           foregroundColor: index == 0
                               ? Colors.black
                               : Colors.black87,
+                          child: Text('${index + 1}'),
                         ),
                         title: Text(
                           client?.name ?? 'Desconhecido',
@@ -200,11 +198,11 @@ class StatsScreen extends StatelessWidget {
     Color color,
   ) {
     return Card(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: color.withOpacity(0.5)),
+        side: BorderSide(color: color.withValues(alpha: 0.5)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),

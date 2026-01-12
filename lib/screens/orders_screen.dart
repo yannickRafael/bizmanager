@@ -47,7 +47,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
-          Future<void> _pickContact() async {
+          Future<void> pickContact() async {
             if (await Permission.contacts.request().isGranted) {
               final contact = await contacts.FlutterContacts.openExternalPick();
               if (contact != null) {
@@ -153,7 +153,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         children: [
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: _pickContact,
+                              onPressed: pickContact,
                               icon: const Icon(Icons.contacts),
                               label: const Text('Importar de Contactos'),
                             ),
@@ -391,8 +391,9 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   decimal: true,
                 ),
                 validator: (val) {
-                  if (val == null || double.tryParse(val) == null)
+                  if (val == null || double.tryParse(val) == null) {
                     return 'Invalid amount';
+                  }
                   if (double.parse(val) <= 0) return 'Must be > 0';
                   return null;
                 },
@@ -523,7 +524,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
+                          color: statusColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(color: statusColor),
                         ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
-import '../models/client.dart';
 import '../models/request.dart';
 import 'package:intl/intl.dart';
 
@@ -55,8 +54,9 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     return Consumer<DataManager>(
       builder: (context, data, _) {
         final client = data.getClientById(widget.clientId);
-        if (client == null)
+        if (client == null) {
           return const Scaffold(body: Center(child: Text('Client not found')));
+        }
 
         final clientOrders = data.requests
             .where((r) => r.clientId == widget.clientId)
@@ -229,7 +229,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: statusColor.withOpacity(0.1),
+                              color: statusColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: statusColor),
                             ),

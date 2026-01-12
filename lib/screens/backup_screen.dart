@@ -5,10 +5,11 @@ import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:extension_google_sign_in_as_googleapis_auth/extension_google_sign_in_as_googleapis_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart' as gsi;
 import 'package:googleapis/sheets/v4.dart' as sheets;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:googleapis_auth/auth_io.dart' as auth;
+import 'package:http/http.dart' as http;
 import '../services/data_manager.dart';
 
 class BackupScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class BackupScreen extends StatefulWidget {
 }
 
 class _BackupScreenState extends State<BackupScreen> {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
+  final gsi.GoogleSignIn _googleSignIn = gsi.GoogleSignIn(
     scopes: [sheets.SheetsApi.spreadsheetsScope],
   );
 
@@ -116,16 +117,31 @@ class _BackupScreenState extends State<BackupScreen> {
         return;
       }
 
-      final httpClient = await _googleSignIn.authenticatedClient();
-      if (httpClient == null) {
-        throw 'Falha na autenticação HTTP';
-      }
+      final googleAuth = await googleUser.authentication;
+      final accessToken = googleAuth.accessToken;
+      if (accessToken == null) throw 'Falha ao obter token de acesso';
+
+      final accessCredentials = auth.AccessCredentials(
+        auth.AccessToken(
+          'Bearer',
+          accessToken,
+          DateTime.now().add(const Duration(hours: 1)).toUtc(),
+        ),
+        null,
+        [sheets.SheetsApi.spreadsheetsScope],
+      );
+
+      final httpClient = auth.authenticatedClient(
+        http.Client(),
+        accessCredentials,
+      );
 
       final sheetsApi = sheets.SheetsApi(httpClient);
       final prefs = await SharedPreferences.getInstance();
       String? spreadsheetId = prefs.getString('google_sheet_id');
 
       // 2. Prepare Data
+      if (!context.mounted) return;
       final dataManager = Provider.of<DataManager>(context, listen: false);
 
       final clientsData = [
