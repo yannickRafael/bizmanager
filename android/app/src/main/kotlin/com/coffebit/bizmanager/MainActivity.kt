@@ -1,4 +1,4 @@
-package com.example.bizmanager
+package com.coffebit.bizmanager
 
 import io.flutter.embedding.android.FlutterActivity
 
