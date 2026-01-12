@@ -13,7 +13,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => DataManager())],
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            final dm = DataManager();
+            dm.init();
+            return dm;
+          },
+        ),
+      ],
       child: MaterialApp(
         title: 'BizManager',
         theme: ThemeData(
