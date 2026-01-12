@@ -1,3 +1,4 @@
+import 'backup_screen.dart';
 import 'stats_screen.dart';
 import 'products_screen.dart';
 import 'package:flutter/material.dart';
@@ -58,6 +59,17 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const StatsScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.backup),
+              title: const Text('Cópia de Segurança'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const BackupScreen()),
                 );
               },
             ),
