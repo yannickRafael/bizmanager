@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/client.dart';
 import '../models/request.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'database_helper.dart';
 
 class DataManager extends ChangeNotifier {
@@ -14,12 +15,18 @@ class DataManager extends ChangeNotifier {
   List<Request> get requests => List.unmodifiable(_requests);
   List<Product> get products => List.unmodifiable(_products);
 
+  String _currencySymbol = '\$';
+  String get currencySymbol => _currencySymbol;
+
   // Initialize Data
   Future<void> init() async {
     final db = DatabaseHelper.instance;
     _clients = await db.getClients();
     _products = await db.getProducts();
     _requests = await db.getRequests();
+
+    final prefs = await SharedPreferences.getInstance();
+    _currencySymbol = prefs.getString('currency_symbol') ?? '\$';
 
     // Default Products if empty
     if (_products.isEmpty) {
@@ -29,9 +36,31 @@ class DataManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setCurrencySymbol(String symbol) async {
+    _currencySymbol = symbol;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('currency_symbol', symbol);
+    notifyListeners();
+  }
+
   Future<void> addClient(Client client) async {
     await DatabaseHelper.instance.insertClient(client);
     _clients.add(client);
+    notifyListeners();
+  }
+
+  Future<void> updateClient(Client client) async {
+    await DatabaseHelper.instance.updateClient(client);
+    final index = _clients.indexWhere((c) => c.id == client.id);
+    if (index != -1) {
+      _clients[index] = client;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteClient(String id) async {
+    await DatabaseHelper.instance.deleteClient(id);
+    _clients.removeWhere((c) => c.id == id);
     notifyListeners();
   }
 
@@ -41,10 +70,34 @@ class DataManager extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateRequest(Request request) async {
+    await DatabaseHelper.instance.updateRequest(request);
+    final index = _requests.indexWhere((r) => r.id == request.id);
+    if (index != -1) {
+      _requests[index] = request;
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteRequest(String id) async {
+    await DatabaseHelper.instance.deleteRequest(id);
+    _requests.removeWhere((r) => r.id == id);
+    notifyListeners();
+  }
+
   Future<void> addProduct(Product product) async {
     await DatabaseHelper.instance.insertProduct(product);
     _products.add(product);
     notifyListeners();
+  }
+
+  Future<void> updateProduct(Product product) async {
+    await DatabaseHelper.instance.updateProduct(product);
+    final index = _products.indexWhere((p) => p.id == product.id);
+    if (index != -1) {
+      _products[index] = product;
+      notifyListeners();
+    }
   }
 
   Future<void> deleteProduct(String id) async {

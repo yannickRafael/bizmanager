@@ -45,7 +45,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
     ).updateClientNotes(widget.clientId, _notesController.text);
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Notes saved')));
+    ).showSnackBar(const SnackBar(content: Text('Notas guardadas')));
     FocusScope.of(context).unfocus();
   }
 
@@ -55,7 +55,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
       builder: (context, data, _) {
         final client = data.getClientById(widget.clientId);
         if (client == null) {
-          return const Scaffold(body: Center(child: Text('Client not found')));
+          return const Scaffold(body: Center(child: Text('Cliente não encontrado')));
         }
 
         final clientOrders = data.requests
@@ -68,11 +68,45 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
           totalDebt += (order.totalPrice - order.amountPaid);
         }
 
+        final currency = data.currencySymbol;
+
         // Sort orders desc
         clientOrders.sort((a, b) => b.date.compareTo(a.date));
 
         return Scaffold(
-          appBar: AppBar(title: Text(client.name)),
+          appBar: AppBar(
+            title: Text(client.name),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('Apagar Cliente?'),
+                      content: const Text(
+                        'Tem a certeza que quer apagar este cliente?',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Cancelar'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Provider.of<DataManager>(context, listen: false).deleteClient(client.id);
+                            Navigator.pop(ctx);
+                            Navigator.pop(context); // Go back to clients list
+                          },
+                          child: const Text('Apagar', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -138,7 +172,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '\$${totalDebt.toStringAsFixed(2)}',
+                          '$currency${totalDebt.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -218,7 +252,7 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           title: Text(
-                            '$productText - \$${order.totalPrice.toStringAsFixed(2)}',
+                            '$productText - $currency${order.totalPrice.toStringAsFixed(2)}',
                           ),
                           subtitle: Text(
                             DateFormat('dd/MM/yyyy').format(order.date),

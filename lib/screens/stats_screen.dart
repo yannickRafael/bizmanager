@@ -12,6 +12,7 @@ class StatsScreen extends StatelessWidget {
       body: Consumer<DataManager>(
         builder: (context, data, child) {
           final requests = data.requests;
+          final currency = data.currencySymbol;
           if (requests.isEmpty) {
             return const Center(child: Text('Sem dados suficientes.'));
           }
@@ -123,7 +124,7 @@ class StatsScreen extends StatelessWidget {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text('\$${revenue.toStringAsFixed(2)}'),
+                                  Text('$currency${revenue.toStringAsFixed(2)}'),
                                 ],
                               ),
                               const SizedBox(height: 4),
@@ -172,7 +173,7 @@ class StatsScreen extends StatelessWidget {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         trailing: Text(
-                          '\$${entry.value.toStringAsFixed(2)}',
+                          '$currency${entry.value.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -197,6 +198,7 @@ class StatsScreen extends StatelessWidget {
     double value,
     Color color,
   ) {
+    final currency = Provider.of<DataManager>(context, listen: false).currencySymbol;
     return Card(
       color: color.withValues(alpha: 0.1),
       elevation: 0,
@@ -215,7 +217,7 @@ class StatsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '\$${value.toStringAsFixed(2)}',
+              '$currency${value.toStringAsFixed(2)}',
               style: TextStyle(
                 color: color,
                 fontSize: 24,

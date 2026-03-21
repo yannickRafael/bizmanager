@@ -14,9 +14,9 @@ class ProductsScreen extends StatefulWidget {
 class _ProductsScreenState extends State<ProductsScreen> {
   final _uuid = const Uuid();
 
-  void _showAddProductModal(BuildContext context) {
-    String name = '';
-    double defaultPrice = 0.0;
+  void _showAddProductModal(BuildContext context, {Product? existingProduct}) {
+    String name = existingProduct?.name ?? '';
+    double defaultPrice = existingProduct?.defaultPrice ?? 0.0;
     final formKey = GlobalKey<FormState>();
 
     showModalBottomSheet(
@@ -36,13 +36,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Novo Produto',
+                existingProduct == null ? 'Novo Produto' : 'Editar Produto',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
               const SizedBox(height: 16),
               TextFormField(
+                initialValue: name,
                 decoration: const InputDecoration(
                   labelText: 'Nome do Produto',
                   border: OutlineInputBorder(),
@@ -54,10 +55,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
               ),
               const SizedBox(height: 12),
               TextFormField(
-                decoration: const InputDecoration(
+                initialValue: defaultPrice > 0 ? defaultPrice.toString() : null,
+                decoration: InputDecoration(
                   labelText: 'Preço Padrão',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.attach_money),
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.attach_money),
+                  prefixText: Provider.of<DataManager>(context, listen: false).currencySymbol,
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
@@ -72,19 +75,25 @@ class _ProductsScreenState extends State<ProductsScreen> {
                 onPressed: () {
                   if (formKey.currentState!.validate()) {
                     formKey.currentState!.save();
-                    final newProduct = Product(
-                      id: _uuid.v4(),
-                      name: name,
-                      defaultPrice: defaultPrice,
-                    );
-                    Provider.of<DataManager>(
-                      context,
-                      listen: false,
-                    ).addProduct(newProduct);
+                    if (existingProduct != null) {
+                      final updatedProduct = Product(
+                        id: existingProduct.id,
+                        name: name,
+                        defaultPrice: defaultPrice,
+                      );
+                      Provider.of<DataManager>(context, listen: false).updateProduct(updatedProduct);
+                    } else {
+                      final newProduct = Product(
+                        id: _uuid.v4(),
+                        name: name,
+                        defaultPrice: defaultPrice,
+                      );
+                      Provider.of<DataManager>(context, listen: false).addProduct(newProduct);
+                    }
                     Navigator.pop(ctx);
                   }
                 },
-                child: const Text('Guardar Produto'),
+                child: Text(existingProduct == null ? 'Guardar Produto' : 'Guardar Alterações'),
               ),
             ],
           ),
@@ -137,37 +146,46 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  'Preço Padrão: \$${product.defaultPrice.toStringAsFixed(2)}',
+                  'Preço Padrão: ${dataManager.currencySymbol}${product.defaultPrice.toStringAsFixed(2)}',
                 ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Apagar Produto?'),
-                        content: Text(
-                          'Tem a certeza que quer apagar "${product.name}"?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Cancelar'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              dataManager.deleteProduct(product.id);
-                              Navigator.pop(ctx);
-                            },
-                            child: const Text(
-                              'Apagar',
-                              style: TextStyle(color: Colors.red),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.blue),
+                      onPressed: () => _showAddProductModal(context, existingProduct: product),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Apagar Produto?'),
+                            content: Text(
+                              'Tem a certeza que quer apagar "${product.name}"?',
                             ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  dataManager.deleteProduct(product.id);
+                                  Navigator.pop(ctx);
+                                },
+                                child: const Text(
+                                  'Apagar',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    );
-                  },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               );
             },

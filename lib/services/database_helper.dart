@@ -85,6 +85,11 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> deleteClient(String id) async {
+    final db = await database;
+    await db.delete('clients', where: 'id = ?', whereArgs: [id]);
+  }
+
   // --- CRUD Products ---
   Future<void> insertProduct(Product product) async {
     final db = await database;
@@ -104,6 +109,16 @@ class DatabaseHelper {
   Future<void> deleteProduct(String id) async {
     final db = await database;
     await db.delete('products', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> updateProduct(Product product) async {
+    final db = await database;
+    await db.update(
+      'products',
+      product.toMap(),
+      where: 'id = ?',
+      whereArgs: [product.id],
+    );
   }
 
   // --- CRUD Requests ---
@@ -130,5 +145,10 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [request.id],
     );
+  }
+
+  Future<void> deleteRequest(String id) async {
+    final db = await database;
+    await db.delete('requests', where: 'id = ?', whereArgs: [id]);
   }
 }

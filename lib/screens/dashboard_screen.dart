@@ -98,6 +98,7 @@ class DashboardScreen extends StatelessWidget {
           for (var r in dataManager.requests) {
             totalRevenue += r.totalPrice;
           }
+          final currency = dataManager.currencySymbol;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -115,7 +116,7 @@ class DashboardScreen extends StatelessWidget {
                 _buildSummaryCard(
                   context,
                   title: 'Receita Total',
-                  value: '\$${totalRevenue.toStringAsFixed(2)}',
+                  value: '$currency${totalRevenue.toStringAsFixed(2)}',
                   icon: Icons.attach_money,
                   color: Colors.green,
                 ),

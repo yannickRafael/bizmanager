@@ -18,18 +18,18 @@ class OrdersScreen extends StatefulWidget {
 
 class _OrdersScreenState extends State<OrdersScreen> {
   final _uuid = const Uuid();
+  String _searchQuery = '';
 
-  void _showAddOrderModal(BuildContext context) {
+  void _showAddOrderModal(BuildContext context, {Request? existingRequest}) {
     // Variables for Order
-    // Variables for Order
-    String? selectedProductName;
-    double amount = 0;
-    double price = 0;
-    DateTime date = DateTime.now();
+    String? selectedProductName = existingRequest?.productName;
+    double amount = existingRequest?.amount ?? 0;
+    double price = existingRequest?.totalPrice ?? 0;
+    DateTime date = existingRequest?.date ?? DateTime.now();
 
     // Variables for Client Selection
-    int selectedTab = 0; // 0: Existing, 1: New
-    String? selectedClientId;
+    int selectedTab = existingRequest != null ? 0 : 0; // 0: Existing, 1: New
+    String? selectedClientId = existingRequest?.clientId;
 
     // Variables for New Client
     String newClientName = '';
@@ -76,124 +76,124 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Novo Pedido',
+                      existingRequest == null ? 'Novo Pedido' : 'Editar Pedido',
                       style: Theme.of(context).textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
 
-                    // Client Section
-                    Text(
-                      'Detalhes do Cliente',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Toggle between Existing and New
-                    SegmentedButton<int>(
-                      segments: const [
-                        ButtonSegment(
-                          value: 0,
-                          label: Text('Existente'),
-                          icon: Icon(Icons.list),
-                        ),
-                        ButtonSegment(
-                          value: 1,
-                          label: Text('Novo / Importar'),
-                          icon: Icon(Icons.person_add),
-                        ),
-                      ],
-                      selected: {selectedTab},
-                      onSelectionChanged: (Set<int> newSelection) {
-                        setState(() {
-                          selectedTab = newSelection.first;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    if (selectedTab == 0) ...[
-                      // Existing Client Dropdown
-                      Consumer<DataManager>(
-                        builder: (context, data, _) {
-                          final clients = data.clients;
-                          if (clients.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Nenhum cliente encontrado. Mude para "Novo" para criar.',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            );
-                          }
-                          return DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: 'Selecionar Cliente',
-                              border: OutlineInputBorder(),
-                            ),
-                            value: selectedClientId,
-                            items: clients
-                                .map(
-                                  (c) => DropdownMenuItem(
-                                    value: c.id,
-                                    child: Text(c.name),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (val) => selectedClientId = val,
-                            validator: (val) => selectedTab == 0 && val == null
-                                ? 'Selecione um cliente'
-                                : null,
-                          );
-                        },
+                    if (existingRequest == null) ...[
+                      // Client Section
+                      Text(
+                        'Detalhes do Cliente',
+                        style: Theme.of(context).textTheme.titleMedium,
                       ),
-                    ] else ...[
-                      // New Client Form
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: pickContact,
-                              icon: const Icon(Icons.contacts),
-                              label: const Text('Importar de Contactos'),
-                            ),
+                      const SizedBox(height: 8),
+
+                      // Toggle between Existing and New
+                      SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment(
+                            value: 0,
+                            label: Text('Existente'),
+                            icon: Icon(Icons.list),
+                          ),
+                          ButtonSegment(
+                            value: 1,
+                            label: Text('Novo / Importar'),
+                            icon: Icon(Icons.person_add),
                           ),
                         ],
+                        selected: {selectedTab},
+                        onSelectionChanged: (Set<int> newSelection) {
+                          setState(() {
+                            selectedTab = newSelection.first;
+                          });
+                        },
                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Nome do Cliente',
-                          border: OutlineInputBorder(),
+                      const SizedBox(height: 16),
+                      
+                      if (selectedTab == 0) ...[
+                        Consumer<DataManager>(
+                          builder: (context, data, _) {
+                            final clients = data.clients;
+                            if (clients.isEmpty) {
+                              return const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Nenhum cliente encontrado. Mude para "Novo" para criar.',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              );
+                            }
+                            return DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: 'Selecionar Cliente',
+                                border: OutlineInputBorder(),
+                              ),
+                              value: selectedClientId,
+                              items: clients
+                                  .map(
+                                    (c) => DropdownMenuItem(
+                                      value: c.id,
+                                      child: Text(c.name),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) => selectedClientId = val,
+                              validator: (val) => selectedTab == 0 && val == null
+                                  ? 'Selecione um cliente'
+                                  : null,
+                            );
+                          },
                         ),
-                        validator: (val) =>
-                            selectedTab == 1 && (val == null || val.isEmpty)
-                            ? 'Insira o nome'
-                            : null,
-                        onSaved: (val) => newClientName = val!.trim(),
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: phoneController,
-                        decoration: const InputDecoration(
-                          labelText: 'Número de Telefone',
-                          border: OutlineInputBorder(),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: pickContact,
+                                icon: const Icon(Icons.contacts),
+                                label: const Text('Importar de Contactos'),
+                              ),
+                            ),
+                          ],
                         ),
-                        keyboardType: TextInputType.phone,
-                        onSaved: (val) => newClientPhone = val?.trim() ?? '',
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Endereço',
-                          border: OutlineInputBorder(),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Nome do Cliente',
+                            border: OutlineInputBorder(),
+                          ),
+                          validator: (val) =>
+                              selectedTab == 1 && (val == null || val.isEmpty)
+                              ? 'Insira o nome'
+                              : null,
+                          onSaved: (val) => newClientName = val!.trim(),
                         ),
-                        onSaved: (val) => newClientAddress = val?.trim() ?? '',
-                      ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          controller: phoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'Número de Telefone',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.phone,
+                          onSaved: (val) => newClientPhone = val?.trim() ?? '',
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          decoration: const InputDecoration(
+                            labelText: 'Endereço',
+                            border: OutlineInputBorder(),
+                          ),
+                          onSaved: (val) => newClientAddress = val?.trim() ?? '',
+                        ),
+                      ],
+                      const SizedBox(height: 24),
                     ],
 
-                    const SizedBox(height: 24),
                     Text(
                       'Detalhes do Pedido',
                       style: Theme.of(context).textTheme.titleMedium,
@@ -241,6 +241,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       children: [
                         Expanded(
                           child: TextFormField(
+                            initialValue: amount > 0 ? amount.toString() : null,
                             decoration: const InputDecoration(
                               labelText: 'Quantidade',
                               border: OutlineInputBorder(),
@@ -288,10 +289,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             initialValue: price > 0
                                 ? price.toStringAsFixed(2)
                                 : null,
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               labelText: 'Preço Total',
-                              border: OutlineInputBorder(),
-                              prefixText: '\$',
+                              border: const OutlineInputBorder(),
+                              prefixText: Provider.of<DataManager>(context, listen: false).currencySymbol,
                             ),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
@@ -330,21 +331,34 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             dataManager.addClient(newClient);
                           }
 
-                          // Create Order
-                          final newRequest = Request(
-                            id: _uuid.v4(),
-                            clientId: finalClientId,
-                            productName: selectedProductName!,
-                            amount: amount,
-                            totalPrice: price,
-                            date: date,
-                            paymentStatus: PaymentStatus.pending,
-                          );
-                          dataManager.addRequest(newRequest);
+                          if (existingRequest != null) {
+                            final updatedRequest = Request(
+                              id: existingRequest.id,
+                              clientId: existingRequest.clientId,
+                              productName: selectedProductName!,
+                              amount: amount,
+                              totalPrice: price,
+                              date: date,
+                              amountPaid: existingRequest.amountPaid,
+                              paymentStatus: existingRequest.paymentStatus,
+                            );
+                            dataManager.updateRequest(updatedRequest);
+                          } else {
+                            final newRequest = Request(
+                              id: _uuid.v4(),
+                              clientId: finalClientId,
+                              productName: selectedProductName!,
+                              amount: amount,
+                              totalPrice: price,
+                              date: date,
+                              paymentStatus: PaymentStatus.pending,
+                            );
+                            dataManager.addRequest(newRequest);
+                          }
                           Navigator.pop(ctx);
                         }
                       },
-                      child: const Text('Criar Pedido'),
+                      child: Text(existingRequest == null ? 'Criar Pedido' : 'Guardar Alterações'),
                     ),
                   ],
                 ),
@@ -362,19 +376,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Register Payment'),
+      builder: (ctx) {
+        final currency = Provider.of<DataManager>(context, listen: false).currencySymbol;
+        return AlertDialog(
+        title: const Text('Registar Pagamento'),
         content: Form(
           key: formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Total Price: \$${request.totalPrice.toStringAsFixed(2)}'),
-              Text('Already Paid: \$${request.amountPaid.toStringAsFixed(2)}'),
+              Text('Preço Total: $currency${request.totalPrice.toStringAsFixed(2)}'),
+              Text('Já Pago: $currency${request.amountPaid.toStringAsFixed(2)}'),
               const SizedBox(height: 8),
               Text(
-                'Remaining: \$${(request.totalPrice - request.amountPaid).toStringAsFixed(2)}',
+                'Remanescente: $currency${(request.totalPrice - request.amountPaid).toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: Colors.red,
@@ -382,19 +398,19 @@ class _OrdersScreenState extends State<OrdersScreen> {
               ),
               const SizedBox(height: 16),
               TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Amount to Pay',
-                  border: OutlineInputBorder(),
-                  prefixText: '\$',
+                decoration: InputDecoration(
+                  labelText: 'Valor a Pagar',
+                  border: const OutlineInputBorder(),
+                  prefixText: currency,
                 ),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 validator: (val) {
                   if (val == null || double.tryParse(val) == null) {
-                    return 'Invalid amount';
+                    return 'Valor inválido';
                   }
-                  if (double.parse(val) <= 0) return 'Must be > 0';
+                  if (double.parse(val) <= 0) return 'Deve ser > 0';
                   return null;
                 },
                 onSaved: (val) => paymentAmount = double.parse(val!),
@@ -405,7 +421,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: const Text('Cancelar'),
           ),
           FilledButton(
             onPressed: () {
@@ -418,17 +434,44 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 Navigator.pop(ctx);
               }
             },
-            child: const Text('Add Payment'),
+            child: const Text('Adicionar Pagamento'),
           ),
         ],
-      ),
+      );
+    },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Pedidos')),
+      appBar: AppBar(
+        title: const Text('Pedidos'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Pesquisar produto ou cliente',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              ),
+              onChanged: (val) {
+                setState(() {
+                  _searchQuery = val.toLowerCase();
+                });
+              },
+            ),
+          ),
+        ),
+      ),
       body: Consumer<DataManager>(
         builder: (context, dataManager, child) {
           if (dataManager.requests.isEmpty) {
@@ -461,10 +504,21 @@ class _OrdersScreenState extends State<OrdersScreen> {
           final sortedRequests = List.of(dataManager.requests)
             ..sort((a, b) => b.date.compareTo(a.date));
 
+          final filteredRequests = sortedRequests.where((r) {
+            final client = dataManager.getClientById(r.clientId);
+            final clientName = client?.name.toLowerCase() ?? '';
+            final productName = r.productName.toLowerCase();
+            return clientName.contains(_searchQuery) || productName.contains(_searchQuery);
+          }).toList();
+
+          if (filteredRequests.isEmpty && _searchQuery.isNotEmpty) {
+            return const Center(child: Text('Nenhum pedido encontrado.'));
+          }
+
           return ListView.builder(
-            itemCount: sortedRequests.length,
+            itemCount: filteredRequests.length,
             itemBuilder: (context, index) {
-              final req = sortedRequests[index];
+              final req = filteredRequests[index];
               final client = dataManager.getClientById(req.clientId);
 
               Color statusColor;
@@ -501,7 +555,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        '\$${req.totalPrice.toStringAsFixed(2)}',
+                        '${dataManager.currencySymbol}${req.totalPrice.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -535,6 +589,52 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        _showAddOrderModal(context, existingRequest: req);
+                      } else if (value == 'delete') {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Apagar Pedido?'),
+                            content: const Text(
+                              'Tem a certeza que quer apagar este pedido?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancelar'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Provider.of<DataManager>(context, listen: false).deleteRequest(req.id);
+                                  Navigator.pop(ctx);
+                                },
+                                child: const Text(
+                                  'Apagar',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      const PopupMenuItem<String>(
+                        value: 'edit',
+                        child: Text('Editar'),
+                      ),
+                      const PopupMenuItem<String>(
+                        value: 'delete',
+                        child: Text(
+                          'Apagar',
+                          style: TextStyle(color: Colors.red),
                         ),
                       ),
                     ],
