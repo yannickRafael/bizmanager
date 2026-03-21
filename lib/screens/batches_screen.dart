@@ -69,10 +69,10 @@ class _BatchesScreenState extends State<BatchesScreen> {
                     TextFormField(
                       initialValue: name,
                       decoration: const InputDecoration(
-                        labelText: 'Nome ou Código do Lote',
+                        labelText: 'Nome ou Código (Opcional)',
                         border: OutlineInputBorder(),
                       ),
-                      validator: (val) => val == null || val.isEmpty ? 'Insira um nome' : null,
+                      validator: (val) => null, // Name is now optional
                       onSaved: (val) => name = val!.trim(),
                     ),
                     const SizedBox(height: 12),
@@ -197,7 +197,7 @@ class _BatchesScreenState extends State<BatchesScreen> {
                           child: TextFormField(
                             initialValue: acquisitionCost > 0 ? acquisitionCost.toStringAsFixed(2) : '',
                             decoration: InputDecoration(
-                              labelText: 'Custo de Aquisição',
+                              labelText: 'Custo Total de Aquisição',
                               border: const OutlineInputBorder(),
                               prefixText: Provider.of<DataManager>(ctx, listen: false).currencySymbol,
                             ),
@@ -210,22 +210,24 @@ class _BatchesScreenState extends State<BatchesScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Status and Notes
-                    DropdownButtonFormField<BatchStatus>(
-                      value: status,
-                      decoration: const InputDecoration(
-                        labelText: 'Estado do Lote',
-                        border: OutlineInputBorder(),
+                    if (existingBatch != null) ...[
+                      DropdownButtonFormField<BatchStatus>(
+                        value: status,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Estado do Lote',
+                          border: OutlineInputBorder(),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: BatchStatus.active, child: Text('Activo (Em Criação)')),
+                          DropdownMenuItem(value: BatchStatus.closed, child: Text('Encerrado / Liquidado')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => status = val);
+                        },
                       ),
-                      items: const [
-                        DropdownMenuItem(value: BatchStatus.active, child: Text('Activo (Em Criação)')),
-                        DropdownMenuItem(value: BatchStatus.closed, child: Text('Encerrado / Liquidado')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) setState(() => status = val);
-                      },
-                    ),
-                    const SizedBox(height: 12),
+                      const SizedBox(height: 12),
+                    ],
                     
                     TextFormField(
                       initialValue: notes,
@@ -243,6 +245,10 @@ class _BatchesScreenState extends State<BatchesScreen> {
                         if (formKey.currentState!.validate()) {
                           formKey.currentState!.save();
                           
+                          if (name.isEmpty) {
+                            name = 'Lote ${DateFormat('dd/MM/yyyy').format(entryDate)}';
+                          }
+
                           int currentQty = existingBatch?.currentQuantity ?? initialQuantity;
 
                           // Ensure current quantity isn't accidentally overridden improperly by simple edits, 
