@@ -1,12 +1,12 @@
 import 'backup_screen.dart';
-import 'stats_screen.dart';
-import 'products_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
-import '../models/request.dart';
+import '../models/enums.dart';
+
 import 'clients_screen.dart';
-import 'orders_screen.dart';
+import 'farms_screen.dart';
+import 'batches_screen.dart';
 import 'settings_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -19,7 +19,7 @@ class DashboardScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'BizManager',
+          'AvícoPro',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         backgroundColor: theme.colorScheme.primaryContainer,
@@ -41,36 +41,36 @@ class DashboardScreen extends StatelessWidget {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.inventory_2),
-              title: const Text('Produtos'),
+              leading: const Icon(Icons.home_work),
+              title: const Text('Explorações'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ProductsScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const FarmsScreen()));
               },
             ),
             ListTile(
-              leading: const Icon(Icons.bar_chart),
-              title: const Text('Estatísticas'),
+              leading: const Icon(Icons.pets),
+              title: const Text('Lotes / Bandos'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const StatsScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchesScreen()));
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.people),
+              title: const Text('Clientes'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ClientsScreen()));
+              },
+            ),
+            // We will add Partners and Sales and Reports in next phases
             ListTile(
               leading: const Icon(Icons.backup),
               title: const Text('Cópia de Segurança'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const BackupScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const BackupScreen()));
               },
             ),
             ListTile(
@@ -78,10 +78,7 @@ class DashboardScreen extends StatelessWidget {
               title: const Text('Definições'),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
               },
             ),
           ],
@@ -89,15 +86,19 @@ class DashboardScreen extends StatelessWidget {
       ),
       body: Consumer<DataManager>(
         builder: (context, dataManager, child) {
-          final totalRequests = dataManager.requests.length;
-          final pendingRequests = dataManager.requests
-              .where((r) => r.paymentStatus == PaymentStatus.pending)
-              .length;
+          final activeMeatBatches = dataManager.batches.where((b) => b.type == BatchType.meat && b.status == BatchStatus.active).toList();
+          final activeLayerBatches = dataManager.batches.where((b) => b.type == BatchType.layer && b.status == BatchStatus.active).toList();
 
+          int liveMeatBirds = activeMeatBatches.fold(0, (sum, b) => sum + b.currentQuantity);
+          int liveLayerBirds = activeLayerBatches.fold(0, (sum, b) => sum + b.currentQuantity);
+
+          double totalExpenses = dataManager.expenses.fold(0, (sum, e) => sum + e.amount);
+          
           double totalRevenue = 0;
-          for (var r in dataManager.requests) {
-            totalRevenue += r.totalPrice;
-          }
+          totalRevenue += dataManager.chickenSales.fold(0.0, (sum, s) => sum + s.total);
+          totalRevenue += dataManager.eggSales.fold(0.0, (sum, s) => sum + s.total);
+          totalRevenue += dataManager.culledBirdSales.fold(0.0, (sum, s) => sum + s.total);
+
           final currency = dataManager.currencySymbol;
 
           return SingleChildScrollView(
@@ -106,19 +107,35 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Resumo',
+                  'Visão Geral',
                   style: theme.textTheme.headlineMedium?.copyWith(
                     color: theme.colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildSummaryCard(
-                  context,
-                  title: 'Receita Total',
-                  value: '$currency${totalRevenue.toStringAsFixed(2)}',
-                  icon: Icons.attach_money,
-                  color: Colors.green,
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSummaryCard(
+                        context,
+                        title: 'Aves de Corte',
+                        value: '$liveMeatBirds',
+                        icon: Icons.pets,
+                        color: Colors.orange,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        context,
+                        title: 'Poedeiras',
+                        value: '$liveLayerBirds',
+                        icon: Icons.egg,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -126,20 +143,20 @@ class DashboardScreen extends StatelessWidget {
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        title: 'Total Pedidos',
-                        value: '$totalRequests',
-                        icon: Icons.shopping_bag_outlined,
-                        color: Colors.blue,
+                        title: 'Receita Total',
+                        value: '$currency${totalRevenue.toStringAsFixed(2)}',
+                        icon: Icons.trending_up,
+                        color: Colors.green,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildSummaryCard(
                         context,
-                        title: 'Pendentes',
-                        value: '$pendingRequests',
-                        icon: Icons.pending_actions,
-                        color: Colors.orange,
+                        title: 'Despesas',
+                        value: '$currency${totalExpenses.toStringAsFixed(2)}',
+                        icon: Icons.trending_down,
+                        color: Colors.red,
                       ),
                     ),
                   ],
@@ -154,21 +171,21 @@ class DashboardScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 _buildActionButton(
                   context,
-                  label: 'Gerir Clientes',
-                  icon: Icons.people,
+                  label: 'Gerir Lotes',
+                  icon: Icons.list_alt,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ClientsScreen()),
+                    MaterialPageRoute(builder: (_) => const BatchesScreen()),
                   ),
                 ),
                 const SizedBox(height: 12),
                 _buildActionButton(
                   context,
-                  label: 'Gerir Pedidos',
-                  icon: Icons.list_alt,
+                  label: 'Explorações',
+                  icon: Icons.home_work,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const OrdersScreen()),
+                    MaterialPageRoute(builder: (_) => const FarmsScreen()),
                   ),
                 ),
               ],
@@ -190,19 +207,24 @@ class DashboardScreen extends StatelessWidget {
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 16),
+            Icon(icon, size: 28, color: color),
+            const SizedBox(height: 12),
             Text(
               value,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            const SizedBox(height: 4),
             Text(
               title,
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: TextStyle(color: Colors.grey[600], fontSize: 13),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

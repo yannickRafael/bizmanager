@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/data_manager.dart';
-import '../models/request.dart';
+import '../models/enums.dart';
+import '../models/sale.dart';
 import 'package:intl/intl.dart';
 
 class ClientDetailsScreen extends StatefulWidget {
@@ -58,20 +59,21 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
           return const Scaffold(body: Center(child: Text('Cliente não encontrado')));
         }
 
-        final clientOrders = data.requests
-            .where((r) => r.clientId == widget.clientId)
-            .toList();
+        final chickenSales = data.chickenSales.where((s) => s.clientId == widget.clientId).toList();
+        final eggSales = data.eggSales.where((s) => s.clientId == widget.clientId).toList();
+        final culledSales = data.culledBirdSales.where((s) => s.clientId == widget.clientId).toList();
 
         // Calculate Debt
         double totalDebt = 0;
-        for (var order in clientOrders) {
-          totalDebt += (order.totalPrice - order.amountPaid);
-        }
+        for (var s in chickenSales) totalDebt += (s.total - s.amountPaid);
+        for (var s in eggSales) totalDebt += (s.total - s.amountPaid);
+        for (var s in culledSales) totalDebt += (s.total - s.amountPaid);
 
         final currency = data.currencySymbol;
 
-        // Sort orders desc
-        clientOrders.sort((a, b) => b.date.compareTo(a.date));
+        // Sort all sales desc
+        List<dynamic> allSales = [...chickenSales, ...eggSales, ...culledSales];
+        allSales.sort((a, b) => b.date.compareTo(a.date));
 
         return Scaffold(
           appBar: AppBar(
@@ -214,24 +216,24 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
 
                 // Order History
                 Text(
-                  'Histórico de Pedidos',
+                  'Histórico de Compras',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (clientOrders.isEmpty)
-                  const Text('Nenhum pedido encontrado.')
+                if (allSales.isEmpty)
+                  const Text('Nenhuma compra registada este cliente.')
                 else
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    itemCount: clientOrders.length,
+                    itemCount: allSales.length,
                     itemBuilder: (ctx, index) {
-                      final order = clientOrders[index];
-                      Color statusColor;
-                      String statusText;
-                      switch (order.paymentStatus) {
+                      final sale = allSales[index];
+                      Color statusColor = Colors.grey;
+                      String statusText = 'DESCONHECIDO';
+                      switch (sale.paymentStatus) {
                         case PaymentStatus.paid:
                           statusColor = Colors.green;
                           statusText = 'PAGO';
@@ -246,16 +248,23 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                           break;
                       }
 
-                      String productText = order.productName.toUpperCase();
+                      String productText = '';
+                      if (sale is ChickenSale) {
+                        productText = 'Frangos (${sale.saleType.name})';
+                      } else if (sale is EggSale) {
+                        productText = 'Ovos (${sale.unit.name})';
+                      } else if (sale is CulledBirdSale) {
+                        productText = 'Aves Descarte';
+                      }
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           title: Text(
-                            '$productText - $currency${order.totalPrice.toStringAsFixed(2)}',
+                            '$productText - $currency${sale.total.toStringAsFixed(2)}',
                           ),
                           subtitle: Text(
-                            DateFormat('dd/MM/yyyy').format(order.date),
+                            DateFormat('dd/MM/yyyy').format(sale.date),
                           ),
                           trailing: Container(
                             padding: const EdgeInsets.symmetric(
