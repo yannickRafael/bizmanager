@@ -228,9 +228,23 @@ class DataManager extends ChangeNotifier {
   }
 
   Future<void> deleteMortality(String id) async {
-    await DatabaseHelper.instance.deleteMortality(id);
-    _mortalities.removeWhere((e) => e.id == id);
-    notifyListeners();
+    final index = _mortalities.indexWhere((m) => m.id == id);
+    if (index != -1) {
+      final m = _mortalities[index];
+      final batchIndex = _batches.indexWhere((b) => b.id == m.batchId);
+      if (batchIndex != -1) {
+        final b = _batches[batchIndex];
+        final bUpdated = Batch(
+          id: b.id, farmId: b.farmId, name: b.name, type: b.type, birdOrigin: b.birdOrigin, entryDate: b.entryDate,
+          initialQuantity: b.initialQuantity, currentQuantity: b.currentQuantity + m.quantity,
+          breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost, status: b.status, notes: b.notes,
+        );
+        await updateBatch(bUpdated);
+      }
+      await DatabaseHelper.instance.deleteMortality(id);
+      _mortalities.removeAt(index);
+      notifyListeners();
+    }
   }
 
   List<Mortality> getMortalityByBatchId(String batchId) {
@@ -283,9 +297,23 @@ class DataManager extends ChangeNotifier {
   }
 
   Future<void> deleteSlaughter(String id) async {
-    await DatabaseHelper.instance.deleteSlaughter(id);
-    _slaughters.removeWhere((e) => e.id == id);
-    notifyListeners();
+    final index = _slaughters.indexWhere((s) => s.id == id);
+    if (index != -1) {
+      final s = _slaughters[index];
+      final batchIndex = _batches.indexWhere((b) => b.id == s.batchId);
+      if (batchIndex != -1) {
+        final b = _batches[batchIndex];
+        final bUpdated = Batch(
+          id: b.id, farmId: b.farmId, name: b.name, type: b.type, birdOrigin: b.birdOrigin, entryDate: b.entryDate,
+          initialQuantity: b.initialQuantity, currentQuantity: b.currentQuantity + s.slaughteredQuantity,
+          breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost, status: b.status, notes: b.notes,
+        );
+        await updateBatch(bUpdated);
+      }
+      await DatabaseHelper.instance.deleteSlaughter(id);
+      _slaughters.removeAt(index);
+      notifyListeners();
+    }
   }
 
   List<Slaughter> getSlaughtersByBatchId(String batchId) {
@@ -332,9 +360,26 @@ class DataManager extends ChangeNotifier {
   }
 
   Future<void> deleteChickenSale(String id) async {
-    await DatabaseHelper.instance.deleteChickenSale(id);
-    _chickenSales.removeWhere((e) => e.id == id);
-    notifyListeners();
+    final index = _chickenSales.indexWhere((s) => s.id == id);
+    if (index != -1) {
+      final v = _chickenSales[index];
+      if (v.saleType == ChickenSaleType.live) {
+        int soldQty = v.groups.fold(0, (sum, g) => sum + g.quantity);
+        final batchIndex = _batches.indexWhere((b) => b.id == v.batchId);
+        if (batchIndex != -1) {
+          final b = _batches[batchIndex];
+          final bUpdated = Batch(
+            id: b.id, farmId: b.farmId, name: b.name, type: b.type, birdOrigin: b.birdOrigin, entryDate: b.entryDate,
+            initialQuantity: b.initialQuantity, currentQuantity: b.currentQuantity + soldQty,
+            breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost, status: b.status, notes: b.notes,
+          );
+          await updateBatch(bUpdated);
+        }
+      }
+      await DatabaseHelper.instance.deleteChickenSale(id);
+      _chickenSales.removeAt(index);
+      notifyListeners();
+    }
   }
 
   // --- CRUD EggSale ---
@@ -397,8 +442,22 @@ class DataManager extends ChangeNotifier {
   }
 
   Future<void> deleteCulledBirdSale(String id) async {
-    await DatabaseHelper.instance.deleteCulledBirdSale(id);
-    _culledBirdSales.removeWhere((e) => e.id == id);
-    notifyListeners();
+    final index = _culledBirdSales.indexWhere((s) => s.id == id);
+    if (index != -1) {
+      final v = _culledBirdSales[index];
+      final batchIndex = _batches.indexWhere((b) => b.id == v.batchId);
+      if (batchIndex != -1) {
+        final b = _batches[batchIndex];
+        final bUpdated = Batch(
+          id: b.id, farmId: b.farmId, name: b.name, type: b.type, birdOrigin: b.birdOrigin, entryDate: b.entryDate,
+          initialQuantity: b.initialQuantity, currentQuantity: b.currentQuantity + v.quantity,
+          breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost, status: b.status, notes: b.notes,
+        );
+        await updateBatch(bUpdated);
+      }
+      await DatabaseHelper.instance.deleteCulledBirdSale(id);
+      _culledBirdSales.removeAt(index);
+      notifyListeners();
+    }
   }
 }
