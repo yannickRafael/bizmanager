@@ -1,4 +1,4 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite.dart' hide Batch;
 import 'package:path/path.dart';
 import '../models/client.dart';
 import '../models/farm.dart';

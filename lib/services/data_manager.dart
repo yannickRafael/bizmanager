@@ -94,6 +94,16 @@ class DataManager extends ChangeNotifier {
     try { return _clients.firstWhere((c) => c.id == id); } catch (e) { return null; }
   }
 
+  Future<void> updateClientNotes(String clientId, String notes) async {
+    final index = _clients.indexWhere((c) => c.id == clientId);
+    if (index != -1) {
+      final client = _clients[index];
+      client.notes = notes;
+      await DatabaseHelper.instance.updateClient(client);
+      notifyListeners();
+    }
+  }
+
   // --- CRUD Farm ---
   Future<void> addFarm(Farm f) async {
     await DatabaseHelper.instance.insertFarm(f);
