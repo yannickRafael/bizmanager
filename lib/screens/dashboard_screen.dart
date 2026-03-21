@@ -8,6 +8,8 @@ import 'clients_screen.dart';
 import 'farms_screen.dart';
 import 'batches_screen.dart';
 import 'settings_screen.dart';
+import 'sales_screen.dart';
+import 'partners_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -64,7 +66,22 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const ClientsScreen()));
               },
             ),
-            // We will add Partners and Sales and Reports in next phases
+            ListTile(
+              leading: const Icon(Icons.sell),
+              title: const Text('Vendas'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const SalesScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.handshake),
+              title: const Text('Parceiros'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const PartnersScreen()));
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.backup),
               title: const Text('Cópia de Segurança'),
@@ -186,6 +203,16 @@ class DashboardScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const FarmsScreen()),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildActionButton(
+                  context,
+                  label: 'Vendas',
+                  icon: Icons.sell,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SalesScreen()),
                   ),
                 ),
               ],
