@@ -305,6 +305,7 @@ class _BatchDetailScreenState extends State<BatchDetailScreen> with SingleTicker
                       Expanded(
                         child: DropdownButtonFormField<EggUnit>(
                           value: unit,
+                          isExpanded: true,
                           decoration: const InputDecoration(labelText: 'Unidade', border: OutlineInputBorder()),
                           items: EggUnit.values.map((u) => DropdownMenuItem(value: u, child: Text(u.name.toUpperCase()))).toList(),
                           onChanged: (val) {

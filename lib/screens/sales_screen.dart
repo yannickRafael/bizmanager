@@ -93,6 +93,7 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                     const SizedBox(height: 12),
                     DropdownButtonFormField<ChickenSaleType>(
                       value: saleType,
+                      isExpanded: true,
                       decoration: const InputDecoration(labelText: 'Forma de Venda', border: OutlineInputBorder()),
                       items: ChickenSaleType.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name.toUpperCase()))).toList(),
                       onChanged: (val) { if (val != null) setModalState(() => saleType = val); },
@@ -125,6 +126,7 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                         Expanded(
                           child: DropdownButtonFormField<PaymentStatus>(
                             value: paymentStatus,
+                            isExpanded: true,
                             decoration: const InputDecoration(labelText: 'Estado Pagamento', border: OutlineInputBorder()),
                             items: PaymentStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name.toUpperCase()))).toList(),
                             onChanged: (val) { if (val != null) setModalState(() => paymentStatus = val); },
@@ -248,6 +250,7 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                         Expanded(
                           child: DropdownButtonFormField<EggUnit>(
                             value: unit,
+                            isExpanded: true,
                             decoration: const InputDecoration(labelText: 'Unidade', border: OutlineInputBorder()),
                             items: EggUnit.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name.toUpperCase()))).toList(),
                             onChanged: (val) { if (val != null) setModalState(() => unit = val); },
@@ -277,6 +280,7 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                         Expanded(
                           child: DropdownButtonFormField<PaymentStatus>(
                             value: paymentStatus,
+                            isExpanded: true,
                             decoration: const InputDecoration(labelText: 'Estado Pagamento', border: OutlineInputBorder()),
                             items: PaymentStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name.toUpperCase()))).toList(),
                             onChanged: (val) { if (val != null) setModalState(() => paymentStatus = val); },
@@ -416,6 +420,7 @@ class _SalesScreenState extends State<SalesScreen> with SingleTickerProviderStat
                         Expanded(
                           child: DropdownButtonFormField<PaymentStatus>(
                             value: paymentStatus,
+                            isExpanded: true,
                             decoration: const InputDecoration(labelText: 'Estado Pagamento', border: OutlineInputBorder()),
                             items: PaymentStatus.values.map((s) => DropdownMenuItem(value: s, child: Text(s.name.toUpperCase()))).toList(),
                             onChanged: (val) { if (val != null) setModalState(() => paymentStatus = val); },

@@ -64,6 +64,7 @@ class _PartnersScreenState extends State<PartnersScreen> {
                     const SizedBox(height: 12),
                     DropdownButtonFormField<PartnerType>(
                       value: type,
+                      isExpanded: true,
                       decoration: const InputDecoration(
                         labelText: 'Tipo de Parceiro',
                         border: OutlineInputBorder(),

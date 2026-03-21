@@ -101,6 +101,7 @@ class _BatchesScreenState extends State<BatchesScreen> {
                         Expanded(
                           child: DropdownButtonFormField<BatchType>(
                             value: type,
+                            isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Tipo de Lote',
                               border: OutlineInputBorder(),
@@ -118,6 +119,7 @@ class _BatchesScreenState extends State<BatchesScreen> {
                         Expanded(
                           child: DropdownButtonFormField<BirdOrigin>(
                             value: origin,
+                            isExpanded: true,
                             decoration: const InputDecoration(
                               labelText: 'Origem',
                               border: OutlineInputBorder(),
