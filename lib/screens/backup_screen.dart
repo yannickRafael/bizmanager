@@ -25,123 +25,177 @@ class _BackupScreenState extends State<BackupScreen> {
   );
 
   bool _isExporting = false;
+  String? _lastBackupDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastBackupDate();
+  }
+
+  Future<void> _loadLastBackupDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() => _lastBackupDate = prefs.getString('last_backup_date'));
+  }
+
+  Future<void> _saveLastBackupDate() async {
+    final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_backup_date', now);
+    setState(() => _lastBackupDate = now);
+  }
+
+  List<List<dynamic>> _buildAllCsvData(DataManager data) {
+    final fmt = DateFormat('yyyy-MM-dd');
+    final rows = <List<dynamic>>[];
+
+    rows.add(['=== EXPLORACOES ===']);
+    rows.add(['ID', 'Nome', 'Endereco', 'Notas']);
+    for (final f in data.farms) rows.add([f.id, f.name, f.address, f.notes]);
+    rows.add([]);
+
+    rows.add(['=== LOTES ===']);
+    rows.add(['ID', 'Nome', 'ExpedicaoId', 'Tipo', 'Origem', 'Data Entrada', 'Qtd Inicial', 'Qtd Atual', 'Estado', 'Custo Aquisicao', 'Raca', 'Notas']);
+    for (final b in data.batches) {
+      rows.add([b.id, b.name, b.farmId, b.type.name, b.birdOrigin.name, fmt.format(b.entryDate), b.initialQuantity, b.currentQuantity, b.status.name, b.acquisitionCost, b.breedOrLineage ?? '', b.notes ?? '']);
+    }
+    rows.add([]);
+
+    rows.add(['=== DESPESAS ===']);
+    rows.add(['ID', 'Lote', 'Tipo', 'Descricao', 'Valor', 'Data']);
+    for (final e in data.expenses) rows.add([e.id, e.batchId, e.type.name, e.description, e.amount, fmt.format(e.date)]);
+    rows.add([]);
+
+    rows.add(['=== MORTALIDADES ===']);
+    rows.add(['ID', 'Lote', 'Quantidade', 'Causa', 'Data']);
+    for (final m in data.mortalities) rows.add([m.id, m.batchId, m.quantity, m.cause ?? '', fmt.format(m.date)]);
+    rows.add([]);
+
+    rows.add(['=== ABATES ===']);
+    rows.add(['ID', 'Lote', 'Qtd Abatida', 'Peso Total kg', 'Custo Abate', 'Data']);
+    for (final s in data.slaughters) rows.add([s.id, s.batchId, s.slaughteredQuantity, s.totalWeightKg, s.slaughterCost, fmt.format(s.date)]);
+    rows.add([]);
+
+    rows.add(['=== PRODUCAO OVOS ===']);
+    rows.add(['ID', 'Lote', 'Unidade', 'Quantidade', 'Tamanho', 'Data']);
+    for (final p in data.eggProductions) rows.add([p.id, p.batchId, p.unit.name, p.quantity, p.size.name, fmt.format(p.date)]);
+    rows.add([]);
+
+    rows.add(['=== VENDAS FRANGO ===']);
+    rows.add(['ID', 'Lote', 'Cliente', 'Tipo Venda', 'Total', 'Pago', 'Estado Pagamento', 'Data']);
+    for (final s in data.chickenSales) rows.add([s.id, s.batchId, s.clientId ?? '', s.saleType.name, s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]);
+    rows.add([]);
+
+    rows.add(['=== VENDAS OVOS ===']);
+    rows.add(['ID', 'Lote', 'Cliente', 'Unidade', 'Quantidade', 'Preco/Unit', 'Total', 'Pago', 'Estado Pagamento', 'Data']);
+    for (final s in data.eggSales) rows.add([s.id, s.batchId, s.clientId ?? '', s.unit.name, s.quantity, s.unitPrice, s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]);
+    rows.add([]);
+
+    rows.add(['=== VENDAS DESCARTES ===']);
+    rows.add(['ID', 'Lote', 'Cliente', 'Quantidade', 'Preco/Ave', 'Total', 'Pago', 'Estado Pagamento', 'Data']);
+    for (final s in data.culledBirdSales) rows.add([s.id, s.batchId, s.clientId ?? '', s.quantity, s.pricePerHead, s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]);
+    rows.add([]);
+
+    rows.add(['=== CLIENTES ===']);
+    rows.add(['ID', 'Nome', 'Telefone', 'Endereço', 'Notas']);
+    for (final c in data.clients) rows.add([c.id, c.name, c.phoneNumber, c.address, c.notes]);
+    rows.add([]);
+
+    rows.add(['=== PARCEIROS ===']);
+    rows.add(['ID', 'Nome', 'Tipo', 'Telefone', 'Endereco', 'Notas']);
+    for (final p in data.partners) rows.add([p.id, p.name, p.type.name, p.phone, p.address, p.notes]);
+
+    return rows;
+  }
 
   Future<void> _exportToCSV(BuildContext context) async {
     try {
       final dataManager = Provider.of<DataManager>(context, listen: false);
-
-      List<List<dynamic>> csvData = [];
-      _buildCsvData(csvData, dataManager);
-
-      String csvContent = const ListToCsvConverter().convert(csvData);
-
+      final csvContent = const ListToCsvConverter().convert(_buildAllCsvData(dataManager));
       final directory = await getTemporaryDirectory();
       final path = '${directory.path}/avicopro_backup_${DateTime.now().millisecondsSinceEpoch}.csv';
-      final file = File(path);
-      await file.writeAsString(csvContent);
-
-      await Share.shareXFiles([XFile(path)], text: 'AvícoPro Backup');
+      await File(path).writeAsString(csvContent);
+      await Share.shareXFiles([XFile(path)], text: 'AvicoPro - Copia de Seguranca CSV');
+      await _saveLastBackupDate();
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao exportar CSV: $e'), backgroundColor: Colors.red),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao exportar CSV: $e'), backgroundColor: Colors.red));
       }
     }
-  }
-
-  void _buildCsvData(List<List<dynamic>> csvData, DataManager data) {
-    csvData.add(['--- EXPLORACOES ---']);
-    csvData.add(['ID', 'Nome', 'Endereço', 'Notas']);
-    for (var f in data.farms) csvData.add([f.id, f.name, f.address, f.notes]);
-    csvData.add([]);
-
-    csvData.add(['--- LOTES ---']);
-    csvData.add(['ID', 'Nome', 'Tipo', 'Estado', 'Quantidade Atual']);
-    for (var b in data.batches) csvData.add([b.id, b.name, b.type.name, b.status.name, b.currentQuantity]);
-    csvData.add([]);
-
-    csvData.add(['--- VENDAS FRANGO ---']);
-    csvData.add(['ID', 'Lote', 'Data', 'Total', 'Pago']);
-    for (var s in data.chickenSales) csvData.add([s.id, s.batchId, DateFormat('yyyy-MM-dd').format(s.date), s.total, s.amountPaid]);
   }
 
   Future<void> _exportToSheets(BuildContext context) async {
     setState(() => _isExporting = true);
     try {
       final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        setState(() => _isExporting = false);
-        return;
-      }
+      if (googleUser == null) { setState(() => _isExporting = false); return; }
 
       final googleAuth = await googleUser.authentication;
       final accessToken = googleAuth.accessToken;
       if (accessToken == null) throw 'Falha ao obter token de acesso';
 
-      final accessCredentials = auth.AccessCredentials(
+      final credentials = auth.AccessCredentials(
         auth.AccessToken('Bearer', accessToken, DateTime.now().add(const Duration(hours: 1)).toUtc()),
         null,
         [sheets.SheetsApi.spreadsheetsScope],
       );
 
-      final httpClient = auth.authenticatedClient(http.Client(), accessCredentials);
+      final httpClient = auth.authenticatedClient(http.Client(), credentials);
       final sheetsApi = sheets.SheetsApi(httpClient);
       final prefs = await SharedPreferences.getInstance();
       String? spreadsheetId = prefs.getString('google_sheet_id');
 
       if (!context.mounted) return;
-      final dataManager = Provider.of<DataManager>(context, listen: false);
+      final dm = Provider.of<DataManager>(context, listen: false);
+      final fmt = DateFormat('yyyy-MM-dd');
 
-      final farmsData = [
-        ['ID', 'Nome', 'Endereço', 'Notas'],
-        ...dataManager.farms.map((f) => [f.id, f.name, f.address, f.notes]),
-      ];
-
-      final batchesData = [
-        ['ID', 'Nome', 'Tipo', 'Estado', 'Qtd Atual'],
-        ...dataManager.batches.map((b) => [b.id, b.name, b.type.name, b.status.name, b.currentQuantity]),
-      ];
-
-      final salesData = [
-        ['ID', 'Tipo Venda', 'Data', 'Total', 'Pago'],
-        ...dataManager.chickenSales.map((s) => [s.id, 'Frango', DateFormat('yyyy-MM-dd').format(s.date), s.total, s.amountPaid]),
-        ...dataManager.eggSales.map((s) => [s.id, 'Ovos', DateFormat('yyyy-MM-dd').format(s.date), s.total, s.amountPaid]),
-      ];
+      final sheetData = <String, List<List<dynamic>>>{
+        'Exploracoes': [['ID', 'Nome', 'Endereco', 'Notas'], ...dm.farms.map((f) => [f.id, f.name, f.address, f.notes])],
+        'Lotes':       [['ID', 'Nome', 'Tipo', 'Estado', 'Qtd Inicial', 'Qtd Atual', 'Custo'], ...dm.batches.map((b) => [b.id, b.name, b.type.name, b.status.name, b.initialQuantity, b.currentQuantity, b.acquisitionCost])],
+        'Despesas':    [['ID', 'Lote', 'Tipo', 'Descricao', 'Valor', 'Data'], ...dm.expenses.map((e) => [e.id, e.batchId, e.type.name, e.description, e.amount, fmt.format(e.date)])],
+        'Mortalidades':[['ID', 'Lote', 'Quantidade', 'Causa', 'Data'], ...dm.mortalities.map((m) => [m.id, m.batchId, m.quantity, m.cause ?? '', fmt.format(m.date)])],
+        'Abates':      [['ID', 'Lote', 'Qtd', 'Peso kg', 'Custo', 'Data'], ...dm.slaughters.map((s) => [s.id, s.batchId, s.slaughteredQuantity, s.totalWeightKg, s.slaughterCost, fmt.format(s.date)])],
+        'Producao_Ovos':[['ID', 'Lote', 'Unidade', 'Quantidade', 'Tamanho', 'Data'], ...dm.eggProductions.map((p) => [p.id, p.batchId, p.unit.name, p.quantity, p.size.name, fmt.format(p.date)])],
+        'Vendas': [
+          ['ID', 'Tipo', 'Lote', 'Cliente', 'Total', 'Pago', 'Estado', 'Data'],
+          ...dm.chickenSales.map((s) => [s.id, 'Frango', s.batchId, s.clientId ?? '', s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]),
+          ...dm.eggSales.map((s) => [s.id, 'Ovos', s.batchId, s.clientId ?? '', s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]),
+          ...dm.culledBirdSales.map((s) => [s.id, 'Descarte', s.batchId, s.clientId ?? '', s.total, s.amountPaid, s.paymentStatus.name, fmt.format(s.date)]),
+        ],
+        'Clientes':    [['ID', 'Nome', 'Telefone', 'Endereço'], ...dm.clients.map((c) => [c.id, c.name, c.phoneNumber, c.address])],
+        'Parceiros':   [['ID', 'Nome', 'Tipo', 'Telefone'], ...dm.partners.map((p) => [p.id, p.name, p.type.name, p.phone])],
+      };
 
       if (spreadsheetId == null) {
-        final spreadsheet = sheets.Spreadsheet(properties: sheets.SpreadsheetProperties(title: 'AvícoPro Backup'));
-        final created = await sheetsApi.spreadsheets.create(spreadsheet);
+        final created = await sheetsApi.spreadsheets.create(
+          sheets.Spreadsheet(properties: sheets.SpreadsheetProperties(title: 'AvicoPro Backup')),
+        );
         spreadsheetId = created.spreadsheetId;
         await prefs.setString('google_sheet_id', spreadsheetId!);
       }
 
       final doc = await sheetsApi.spreadsheets.get(spreadsheetId);
       final existingTitles = doc.sheets?.map((s) => s.properties?.title).toSet() ?? {};
+      final addRequests = sheetData.keys
+          .where((t) => !existingTitles.contains(t))
+          .map((t) => sheets.Request(addSheet: sheets.AddSheetRequest(properties: sheets.SheetProperties(title: t))))
+          .toList();
 
-      List<sheets.Request> requests = [];
-      for (var title in ['Exploracoes', 'Lotes', 'Vendas']) {
-        if (!existingTitles.contains(title)) {
-          requests.add(sheets.Request(addSheet: sheets.AddSheetRequest(properties: sheets.SheetProperties(title: title))));
-        }
+      if (addRequests.isNotEmpty) {
+        await sheetsApi.spreadsheets.batchUpdate(
+          sheets.BatchUpdateSpreadsheetRequest(requests: addRequests), spreadsheetId,
+        );
       }
 
-      if (requests.isNotEmpty) {
-        await sheetsApi.spreadsheets.batchUpdate(sheets.BatchUpdateSpreadsheetRequest(requests: requests), spreadsheetId);
+      for (final entry in sheetData.entries) {
+        await sheetsApi.spreadsheets.values.update(
+          sheets.ValueRange(values: entry.value), spreadsheetId, '${entry.key}!A1', valueInputOption: 'USER_ENTERED',
+        );
       }
 
-      await sheetsApi.spreadsheets.values.update(
-        sheets.ValueRange(values: farmsData), spreadsheetId, 'Exploracoes!A1', valueInputOption: 'USER_ENTERED',
-      );
-      await sheetsApi.spreadsheets.values.update(
-        sheets.ValueRange(values: batchesData), spreadsheetId, 'Lotes!A1', valueInputOption: 'USER_ENTERED',
-      );
-      await sheetsApi.spreadsheets.values.update(
-        sheets.ValueRange(values: salesData), spreadsheetId, 'Vendas!A1', valueInputOption: 'USER_ENTERED',
-      );
-
+      await _saveLastBackupDate();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Exportado para Google Sheets!'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Dados exportados para Google Sheets!'), backgroundColor: Colors.green));
       }
     } catch (e) {
       if (context.mounted) {
@@ -155,36 +209,84 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cópia de Segurança')),
-      body: Center(
+      appBar: AppBar(title: const Text('Copia de Seguranca')),
+      body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Icon(Icons.cloud_upload_outlined, size: 80, color: Colors.green),
-              const SizedBox(height: 24),
-              Text('Segurança na Nuvem', style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+              Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.cloud_done_outlined, size: 48, color: Colors.green),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Copia de Seguranca', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text(
+                              _lastBackupDate == null ? 'Nunca efectuada.' : 'Ultimo backup: $_lastBackupDate',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text('Escolha o destino', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
-              const Text('Guarde os seus dados no Google Sheets ou exporte um ficheiro CSV.', textAlign: TextAlign.center, style: TextStyle(fontSize: 16, color: Colors.grey)),
-              const SizedBox(height: 48),
               if (_isExporting)
-                const CircularProgressIndicator()
+                const Center(child: CircularProgressIndicator())
               else ...[
                 FilledButton.icon(
                   onPressed: () => _exportToSheets(context),
                   icon: const Icon(Icons.table_chart),
                   label: const Text('Exportar para Google Sheets'),
-                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16), backgroundColor: Colors.green[700]),
+                  style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16), backgroundColor: Colors.green[700]),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: () => _exportToCSV(context),
                   icon: const Icon(Icons.download),
-                  label: const Text('Exportar para CSV'),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16)),
+                  label: const Text('Exportar para CSV (Partilhar)'),
+                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
                 ),
               ],
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 16),
+              Text('Dados incluidos no backup', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              ...[
+                ('Exploracoes', Icons.home_work),
+                ('Lotes / Bandos', Icons.pets),
+                ('Despesas', Icons.receipt),
+                ('Mortalidades', Icons.warning),
+                ('Abates', Icons.cut),
+                ('Producao de Ovos', Icons.egg),
+                ('Vendas (Frango, Ovos, Descarte)', Icons.sell),
+                ('Clientes', Icons.people),
+                ('Parceiros', Icons.handshake),
+              ].map((item) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Icon(item.$2, size: 18, color: Colors.grey),
+                    const SizedBox(width: 12),
+                    Text(item.$1),
+                  ],
+                ),
+              )),
             ],
           ),
         ),
