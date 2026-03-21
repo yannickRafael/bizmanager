@@ -113,9 +113,9 @@ class _BackupScreenState extends State<BackupScreen> {
       final dataManager = Provider.of<DataManager>(context, listen: false);
       final csvContent = const ListToCsvConverter().convert(_buildAllCsvData(dataManager));
       final directory = await getTemporaryDirectory();
-      final path = '${directory.path}/avicopro_backup_${DateTime.now().millisecondsSinceEpoch}.csv';
+      final path = '${directory.path}/avigro_backup_${DateTime.now().millisecondsSinceEpoch}.csv';
       await File(path).writeAsString(csvContent);
-      await Share.shareXFiles([XFile(path)], text: 'AvicoPro - Copia de Seguranca CSV');
+      await Share.shareXFiles([XFile(path)], text: 'AviGro - Copia de Seguranca CSV');
       await _saveLastBackupDate();
     } catch (e) {
       if (context.mounted) {
@@ -168,7 +168,7 @@ class _BackupScreenState extends State<BackupScreen> {
 
       if (spreadsheetId == null) {
         final created = await sheetsApi.spreadsheets.create(
-          sheets.Spreadsheet(properties: sheets.SpreadsheetProperties(title: 'AvicoPro Backup')),
+          sheets.Spreadsheet(properties: sheets.SpreadsheetProperties(title: 'AviGro Backup')),
         );
         spreadsheetId = created.spreadsheetId;
         await prefs.setString('google_sheet_id', spreadsheetId!);

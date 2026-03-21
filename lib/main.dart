@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'BizManager',
+        title: 'AviGro',
         theme: ThemeData(
           // Use a nice color scheme as requested by "Premium Designs"
           colorScheme: ColorScheme.fromSeed(

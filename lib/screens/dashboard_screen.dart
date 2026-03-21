@@ -21,7 +21,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('AvícoPro', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('AviGro', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: theme.colorScheme.primaryContainer,
       ),
       drawer: Drawer(
