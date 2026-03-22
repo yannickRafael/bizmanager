@@ -140,12 +140,20 @@ class DashboardScreen extends StatelessWidget {
                             const SizedBox(height: 32),
                             Text('Ações Rápidas', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
                             const SizedBox(height: 16),
-                            _buildActionButton(context, label: 'Lotes / Bandos', icon: Icons.pets, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchesScreen()))),
-                            const SizedBox(height: 12),
-                            _buildActionButton(context, label: 'Registar Vendas', icon: Icons.sell, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalesScreen()))),
-                          ],
-                        ),
-                      ),
+                             _buildActionButton(context, label: 'Lotes / Bandos', icon: Icons.pets, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BatchesScreen()))),
+                             const SizedBox(height: 12),
+                             _buildActionButton(context, label: 'Registar Vendas', icon: Icons.sell, onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SalesScreen()))),
+                             const SizedBox(height: 12),
+                             _buildActionButton(
+                               context, 
+                               label: 'Guia / Tutorial', 
+                               icon: Icons.help_outline, 
+                               color: Colors.orange,
+                               onTap: () => _showTutorialDialog(context)
+                             ),
+                           ],
+                         ),
+                       ),
 
                       // TAB: CORTE (Meat)
                       SingleChildScrollView(
@@ -241,22 +249,112 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, {required String label, required IconData icon, required VoidCallback onTap}) {
+  Widget _buildActionButton(BuildContext context, {required String label, required IconData icon, required VoidCallback onTap, Color? color}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: color?.withOpacity(0.1) ?? Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: color != null ? Border.all(color: color.withOpacity(0.5)) : null,
+        ),
         child: Row(
           children: [
-            Icon(icon, size: 28),
+            Icon(icon, size: 28, color: color),
             const SizedBox(width: 16),
-            Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+            Text(label, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: color)),
             const Spacer(),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            Icon(Icons.arrow_forward_ios, size: 16, color: color ?? Colors.grey),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showTutorialDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.help_outline, color: Colors.orange),
+            SizedBox(width: 10),
+            Text('Guia Rápido AviGro'),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: const [
+              _TutorialItem(
+                number: '1',
+                title: 'Configuração Inicial',
+                desc: 'Registe uma Exploração (Farm) e depois o seu primeiro Lote (Batch).',
+              ),
+              _TutorialItem(
+                number: '2',
+                title: 'Monitorização',
+                desc: 'Clique num Lote para registar Despesas, Mortalidade e Produção.',
+              ),
+              _TutorialItem(
+                number: '3',
+                title: 'Vendas',
+                desc: 'Registe as vendas para atualizar o stock e ver lucros reais.',
+              ),
+              _TutorialItem(
+                number: '4',
+                title: 'Analística',
+                desc: 'Use o Dashboard e Relatórios para ver a rentabilidade de cada bando.',
+              ),
+              _TutorialItem(
+                number: '5',
+                title: 'Backup',
+                desc: 'Exporte para Excel/Google Sheets para ter os seus dados sempre seguros.',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Entendido')),
+        ],
+      ),
+    );
+  }
+}
+
+class _TutorialItem extends StatelessWidget {
+  final String number;
+  final String title;
+  final String desc;
+
+  const _TutorialItem({required this.number, required this.title, required this.desc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 12,
+            backgroundColor: Colors.orange.shade100,
+            child: Text(number, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.orange)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(desc, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
