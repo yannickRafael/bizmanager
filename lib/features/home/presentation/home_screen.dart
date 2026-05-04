@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../services/data_manager.dart';
+import '../../../features/settings/providers/settings_provider.dart';
+import '../../../features/poultry/providers/poultry_provider.dart';
+import '../../../features/cattle/providers/cattle_provider.dart';
+import '../../../features/goats/providers/goat_provider.dart';
 
 /// Landing screen — animal type selector grid with global summary.
 class HomeScreen extends StatelessWidget {
@@ -13,114 +15,120 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final settings = context.watch<SettingsProvider>();
+    final poultry = context.watch<PoultryProvider>();
+    final cattle = context.watch<CattleProvider>();
+    final goat = context.watch<GoatProvider>();
+    final currency = settings.currencySymbol;
+
+    // Global revenue across all modules
+    double totalRevenue = 0;
+    totalRevenue += poultry.chickenSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += poultry.eggSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += poultry.culledBirdSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += cattle.cattleSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += cattle.milkSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += goat.goatSales.fold(0.0, (s, x) => s + x.total);
+    totalRevenue += goat.milkSales.fold(0.0, (s, x) => s + x.total);
+
+    double totalExpenses = 0;
+    totalExpenses += poultry.expenses.fold(0.0, (s, e) => s + e.amount);
+    totalExpenses += cattle.expenses.fold(0.0, (s, e) => s + e.amount);
+    totalExpenses += goat.expenses.fold(0.0, (s, e) => s + e.amount);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Farma', style: TextStyle(fontWeight: FontWeight.bold)),
       ),
       drawer: _buildDrawer(context),
-      body: Consumer<DataManager>(
-        builder: (context, dm, _) {
-          final currency = dm.currencySymbol;
-
-          // Global revenue across all modules
-          double totalRevenue = 0;
-          totalRevenue += dm.chickenSales.fold(0.0, (s, x) => s + x.total);
-          totalRevenue += dm.eggSales.fold(0.0, (s, x) => s + x.total);
-          totalRevenue += dm.culledBirdSales.fold(0.0, (s, x) => s + x.total);
-
-          double totalExpenses = dm.expenses.fold(0.0, (s, e) => s + e.amount);
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // ── Animal Module Grid ──
+            Text(
+              'Os Seus Negócios',
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 1.2,
               children: [
-                // ── Animal Module Grid ──
-                Text(
-                  'Os Seus Negócios',
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                _AnimalModuleCard(
+                  emoji: '🐔',
+                  label: 'Aves',
+                  subtitle: '${poultry.batches.length} lotes',
+                  color: AppTheme.poultryColor,
+                  onTap: () => context.goNamed('poultryDashboard'),
                 ),
-                const SizedBox(height: 16),
-                GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                  children: [
-                    _AnimalModuleCard(
-                      emoji: '🐔',
-                      label: 'Aves',
-                      subtitle: '${dm.batches.where((b) => b.type.name == 'meat' || b.type.name == 'layer').length} lotes',
-                      color: AppTheme.poultryColor,
-                      onTap: () => context.goNamed('poultryDashboard'),
-                    ),
-                    _AnimalModuleCard(
-                      emoji: '🐄',
-                      label: 'Bovinos',
-                      subtitle: 'Em breve',
-                      color: AppTheme.cattleColor,
-                      onTap: () => context.goNamed('cattleDashboard'),
-                    ),
-                    _AnimalModuleCard(
-                      emoji: '🐐',
-                      label: 'Caprinos',
-                      subtitle: 'Em breve',
-                      color: AppTheme.goatColor,
-                      onTap: () => context.goNamed('goatDashboard'),
-                    ),
-                    _AnimalModuleCard(
-                      emoji: '⚙️',
-                      label: 'Definições',
-                      subtitle: '',
-                      color: Colors.grey,
-                      onTap: () => context.goNamed('settings'),
-                    ),
-                  ],
+                _AnimalModuleCard(
+                  emoji: '🐄',
+                  label: 'Bovinos',
+                  subtitle: '${cattle.batches.length} manadas',
+                  color: AppTheme.cattleColor,
+                  onTap: () => context.goNamed('cattleDashboard'),
                 ),
-
-                const SizedBox(height: 32),
-
-                // ── Global Summary ──
-                Text(
-                  'Resumo Global',
-                  style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                _AnimalModuleCard(
+                  emoji: '🐐',
+                  label: 'Caprinos',
+                  subtitle: '${goat.batches.length} rebanhos',
+                  color: AppTheme.goatColor,
+                  onTap: () => context.goNamed('goatDashboard'),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SummaryCard(
-                        title: 'Receita Total',
-                        value: '$currency${totalRevenue.toStringAsFixed(2)}',
-                        icon: Icons.trending_up,
-                        color: Colors.green,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _SummaryCard(
-                        title: 'Despesa Total',
-                        value: '$currency${totalExpenses.toStringAsFixed(2)}',
-                        icon: Icons.trending_down,
-                        color: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _SummaryCard(
-                  title: 'Lucro Líquido',
-                  value: '$currency${(totalRevenue - totalExpenses).toStringAsFixed(2)}',
-                  icon: Icons.attach_money,
-                  color: (totalRevenue - totalExpenses) >= 0 ? Colors.indigo : Colors.red,
+                _AnimalModuleCard(
+                  emoji: '⚙️',
+                  label: 'Definições',
+                  subtitle: '',
+                  color: Colors.grey,
+                  onTap: () => context.goNamed('settings'),
                 ),
               ],
             ),
-          );
-        },
+
+            const SizedBox(height: 32),
+
+            // ── Global Summary ──
+            Text(
+              'Resumo Global',
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _SummaryCard(
+                    title: 'Receita Total',
+                    value: '$currency${totalRevenue.toStringAsFixed(2)}',
+                    icon: Icons.trending_up,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _SummaryCard(
+                    title: 'Despesa Total',
+                    value: '$currency${totalExpenses.toStringAsFixed(2)}',
+                    icon: Icons.trending_down,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _SummaryCard(
+              title: 'Lucro Líquido',
+              value: '$currency${(totalRevenue - totalExpenses).toStringAsFixed(2)}',
+              icon: Icons.attach_money,
+              color: (totalRevenue - totalExpenses) >= 0 ? Colors.indigo : Colors.red,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -163,6 +171,23 @@ class HomeScreen extends StatelessWidget {
             title: const Text('Parceiros'),
             onTap: () { Navigator.pop(context); context.goNamed('partners'); },
           ),
+          const Divider(),
+          ListTile(
+            leading: const Text('🐔', style: TextStyle(fontSize: 20)),
+            title: const Text('Aves'),
+            onTap: () { Navigator.pop(context); context.goNamed('poultryDashboard'); },
+          ),
+          ListTile(
+            leading: const Text('🐄', style: TextStyle(fontSize: 20)),
+            title: const Text('Bovinos'),
+            onTap: () { Navigator.pop(context); context.goNamed('cattleDashboard'); },
+          ),
+          ListTile(
+            leading: const Text('🐐', style: TextStyle(fontSize: 20)),
+            title: const Text('Caprinos'),
+            onTap: () { Navigator.pop(context); context.goNamed('goatDashboard'); },
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.bar_chart),
             title: const Text('Relatórios'),
