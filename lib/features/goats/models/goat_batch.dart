@@ -43,6 +43,16 @@ class GoatBatch extends BaseBatch {
   );
 
   @override
+  GoatBatch copyWithGenderCounts(int maleCount, int femaleCount) => GoatBatch(
+    id: id, farmId: farmId, name: name, entryDate: entryDate,
+    initialQuantity: initialQuantity, currentQuantity: currentQuantity,
+    breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
+    status: status, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
+    purpose: purpose,
+  );
+
+  @override
   Map<String, dynamic> toMap() => {
     ...toBaseMap(),
     'goatPurpose': purpose.name,

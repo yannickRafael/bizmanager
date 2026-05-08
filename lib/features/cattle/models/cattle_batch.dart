@@ -43,6 +43,16 @@ class CattleBatch extends BaseBatch {
   );
 
   @override
+  CattleBatch copyWithGenderCounts(int maleCount, int femaleCount) => CattleBatch(
+    id: id, farmId: farmId, name: name, entryDate: entryDate,
+    initialQuantity: initialQuantity, currentQuantity: currentQuantity,
+    breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
+    status: status, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
+    purpose: purpose,
+  );
+
+  @override
   Map<String, dynamic> toMap() => {
     ...toBaseMap(),
     'cattlePurpose': purpose.name,

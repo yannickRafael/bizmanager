@@ -49,6 +49,9 @@ abstract class BaseBatch {
   /// Create a copy with an updated status.
   BaseBatch copyWithStatus(BatchStatus newStatus);
 
+  /// Create a copy with updated gender counts.
+  BaseBatch copyWithGenderCounts(int maleCount, int femaleCount);
+
   /// Serialize to a map for SQLite storage.
   Map<String, dynamic> toMap();
 

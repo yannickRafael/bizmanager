@@ -95,10 +95,18 @@ class GoatProvider extends ChangeNotifier {
 
   // ── Quantity adjustment (uses copyWithQuantity) ──
 
-  Future<void> _adjustBatchQuantity(String batchId, int delta) async {
+  Future<void> _adjustBatchQuantity(String batchId, int delta, {String? sex}) async {
     final idx = _batches.indexWhere((b) => b.id == batchId);
     if (idx != -1) {
-      final updated = _batches[idx].copyWithQuantity(_batches[idx].currentQuantity + delta);
+      final b = _batches[idx];
+      GoatBatch updated = b.copyWithQuantity(b.currentQuantity + delta) as GoatBatch;
+      if (sex == 'Macho') {
+        updated = updated.copyWithGenderCounts(
+          (b.maleCount + delta).clamp(0, b.initialQuantity), b.femaleCount) as GoatBatch;
+      } else if (sex == 'Fêmea') {
+        updated = updated.copyWithGenderCounts(
+          b.maleCount, (b.femaleCount + delta).clamp(0, b.initialQuantity)) as GoatBatch;
+      }
       await _repo.updateBatch(updated);
       _batches[idx] = updated;
     }
@@ -123,7 +131,7 @@ class GoatProvider extends ChangeNotifier {
   Future<void> addMortality(Mortality m) async {
     await _repo.insertMortality(m);
     _mortalities.add(m);
-    await _adjustBatchQuantity(m.batchId, -m.quantity);
+    await _adjustBatchQuantity(m.batchId, -m.quantity, sex: m.sex);
     notifyListeners();
   }
 
@@ -131,7 +139,7 @@ class GoatProvider extends ChangeNotifier {
     final idx = _mortalities.indexWhere((m) => m.id == id);
     if (idx != -1) {
       final m = _mortalities[idx];
-      await _adjustBatchQuantity(m.batchId, m.quantity);
+      await _adjustBatchQuantity(m.batchId, m.quantity, sex: m.sex);
       await _repo.deleteMortality(id);
       _mortalities.removeAt(idx);
       notifyListeners();

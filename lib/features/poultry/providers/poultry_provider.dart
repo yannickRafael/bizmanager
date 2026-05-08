@@ -104,12 +104,18 @@ class PoultryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _adjustBatchQuantity(String batchId, int delta) async {
+  Future<void> _adjustBatchQuantity(String batchId, int delta, {String? sex}) async {
     final index = _batches.indexWhere((b) => b.id == batchId);
     if (index != -1) {
-      final updated = _batches[index].copyWithQuantity(
-        _batches[index].currentQuantity + delta,
-      );
+      final b = _batches[index];
+      PoultryBatch updated = b.copyWithQuantity(b.currentQuantity + delta) as PoultryBatch;
+      if (sex == 'Macho') {
+        updated = updated.copyWithGenderCounts(
+          (b.maleCount + delta).clamp(0, b.initialQuantity), b.femaleCount) as PoultryBatch;
+      } else if (sex == 'Fêmea') {
+        updated = updated.copyWithGenderCounts(
+          b.maleCount, (b.femaleCount + delta).clamp(0, b.initialQuantity)) as PoultryBatch;
+      }
       await _repo.updateBatch(updated);
       _batches[index] = updated;
     }
@@ -134,7 +140,7 @@ class PoultryProvider extends ChangeNotifier {
   Future<void> addMortality(Mortality m) async {
     await _repo.insertMortality(m);
     _mortalities.add(m);
-    await _adjustBatchQuantity(m.batchId, -m.quantity);
+    await _adjustBatchQuantity(m.batchId, -m.quantity, sex: m.sex);
     notifyListeners();
   }
 
@@ -142,7 +148,7 @@ class PoultryProvider extends ChangeNotifier {
     final index = _mortalities.indexWhere((m) => m.id == id);
     if (index != -1) {
       final m = _mortalities[index];
-      await _adjustBatchQuantity(m.batchId, m.quantity);
+      await _adjustBatchQuantity(m.batchId, m.quantity, sex: m.sex);
       await _repo.deleteMortality(id);
       _mortalities.removeAt(index);
       notifyListeners();

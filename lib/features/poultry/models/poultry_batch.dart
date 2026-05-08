@@ -45,6 +45,16 @@ class PoultryBatch extends BaseBatch {
   );
 
   @override
+  PoultryBatch copyWithGenderCounts(int maleCount, int femaleCount) => PoultryBatch(
+    id: id, farmId: farmId, name: name, entryDate: entryDate,
+    initialQuantity: initialQuantity, currentQuantity: currentQuantity,
+    breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
+    status: status, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
+    type: type, birdOrigin: birdOrigin,
+  );
+
+  @override
   Map<String, dynamic> toMap() => {
     ...toBaseMap(),
     'type': type.name,
