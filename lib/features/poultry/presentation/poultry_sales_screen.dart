@@ -7,8 +7,9 @@ import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../core/widgets/empty_state_widget.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/clients/providers/client_provider.dart';
+import '../../../core/constants/app_constants.dart';
 import '../providers/poultry_provider.dart';
-import '../../../models/enums.dart';
+import '../models/poultry_enums.dart';
 
 /// All poultry sales across batches — 3 tabs: Chicken, Egg, Culled.
 class PoultrySalesScreen extends StatelessWidget {

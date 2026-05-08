@@ -10,8 +10,9 @@ import '../../../core/widgets/empty_state_widget.dart';
 import '../../../core/widgets/loading_widget.dart';
 import '../../../features/farms/providers/farm_provider.dart';
 import '../providers/poultry_provider.dart';
-import '../../../models/batch.dart';
-import '../../../models/enums.dart';
+import '../../../core/constants/app_constants.dart';
+import '../models/poultry_batch.dart';
+import '../models/poultry_enums.dart';
 
 /// Poultry batch listing with create/delete.
 class PoultryBatchList extends StatelessWidget {
@@ -80,15 +81,9 @@ class PoultryBatchList extends StatelessWidget {
                               );
                               if (confirmed) poultry.deleteBatch(b.id);
                             } else if (action == 'close') {
-                              final updated = Batch(
-                                id: b.id, farmId: b.farmId, name: b.name, type: b.type,
-                                birdOrigin: b.birdOrigin, entryDate: b.entryDate,
-                                initialQuantity: b.initialQuantity, currentQuantity: b.currentQuantity,
-                                breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost,
-                                status: isClosed ? BatchStatus.active : BatchStatus.closed,
-                                notes: b.notes,
+                              poultry.updateBatch(
+                                b.copyWithStatus(isClosed ? BatchStatus.active : BatchStatus.closed),
                               );
-                              poultry.updateBatch(updated);
                             }
                           },
                           itemBuilder: (_) => [
@@ -224,7 +219,7 @@ class PoultryBatchList extends StatelessWidget {
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
                         final qty = int.parse(qtyCtrl.text);
-                        context.read<PoultryProvider>().addBatch(Batch(
+                        context.read<PoultryProvider>().addBatch(PoultryBatch(
                           id: const Uuid().v4(),
                           farmId: farmId,
                           name: nameCtrl.text.trim(),

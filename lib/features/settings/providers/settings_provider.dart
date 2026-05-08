@@ -5,14 +5,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsProvider extends ChangeNotifier {
   String _currencySymbol = '\$';
   String _language = 'pt';
+  ThemeMode _themeMode = ThemeMode.system;
 
   String get currencySymbol => _currencySymbol;
   String get language => _language;
+  ThemeMode get themeMode => _themeMode;
 
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _currencySymbol = prefs.getString('currency_symbol') ?? '\$';
     _language = prefs.getString('language') ?? 'pt';
+    final themeName = prefs.getString('theme_mode') ?? 'system';
+    _themeMode = switch (themeName) {
+      'light' => ThemeMode.light,
+      'dark'  => ThemeMode.dark,
+      _       => ThemeMode.system,
+    };
     notifyListeners();
   }
 
@@ -27,6 +35,13 @@ class SettingsProvider extends ChangeNotifier {
     _language = lang;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', lang);
+    notifyListeners();
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_mode', mode.name);
     notifyListeners();
   }
 }

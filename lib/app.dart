@@ -36,7 +36,7 @@ class FarmaApp extends StatelessWidget {
             title: 'Farma',
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
-            themeMode: ThemeMode.light,
+            themeMode: settings.themeMode,
             routerConfig: AppRouter.router,
             debugShowCheckedModeBanner: false,
           );

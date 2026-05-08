@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/stat_card.dart';
 import '../../../core/widgets/loading_widget.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../providers/poultry_provider.dart';
 
@@ -27,7 +28,7 @@ class PoultryDashboard extends StatelessWidget {
       );
     }
 
-    final activeBatches = poultry.batches.where((b) => b.status.name == 'active').toList();
+    final activeBatches = poultry.batches.where((b) => b.status == BatchStatus.active).toList();
     final totalBirds = activeBatches.fold(0, (s, b) => s + b.currentQuantity);
     final totalRevenue = poultry.chickenSales.fold(0.0, (s, x) => s + x.total)
         + poultry.eggSales.fold(0.0, (s, x) => s + x.total)

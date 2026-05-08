@@ -1,41 +1,34 @@
 import 'package:flutter/material.dart';
-import '../repositories/poultry_repository.dart';
 import 'package:farma/core/models/expense.dart';
 import 'package:farma/core/models/mortality.dart';
+import '../repositories/poultry_repository.dart';
+import '../models/poultry_batch.dart';
+import '../models/poultry_models.dart';
+import '../models/poultry_enums.dart';
 
-// Legacy models (until Phase 4 creates PoultryBatch)
-import 'package:farma/models/batch.dart' as legacy;
-import 'package:farma/models/egg_production.dart' as legacy;
-import 'package:farma/models/slaughter.dart' as legacy;
-import 'package:farma/models/sale.dart' as legacy;
-import 'package:farma/models/enums.dart' as legacy_enums;
-
-/// Manages all poultry-specific state.
-/// Replaces the poultry parts of the old DataManager God class.
 class PoultryProvider extends ChangeNotifier {
   final PoultryRepository _repo = PoultryRepository();
 
-  List<legacy.Batch> _batches = [];
+  List<PoultryBatch> _batches = [];
   List<Expense> _expenses = [];
   List<Mortality> _mortalities = [];
-  List<legacy.EggProduction> _eggProductions = [];
-  List<legacy.Slaughter> _slaughters = [];
-  List<legacy.ChickenSale> _chickenSales = [];
-  List<legacy.EggSale> _eggSales = [];
-  List<legacy.CulledBirdSale> _culledBirdSales = [];
+  List<EggProduction> _eggProductions = [];
+  List<Slaughter> _slaughters = [];
+  List<ChickenSale> _chickenSales = [];
+  List<EggSale> _eggSales = [];
+  List<CulledBirdSale> _culledBirdSales = [];
 
   bool _isLoading = false;
   String? _error;
 
-  // ── Getters ──
-  List<legacy.Batch> get batches => List.unmodifiable(_batches);
+  List<PoultryBatch> get batches => List.unmodifiable(_batches);
   List<Expense> get expenses => List.unmodifiable(_expenses);
   List<Mortality> get mortalities => List.unmodifiable(_mortalities);
-  List<legacy.EggProduction> get eggProductions => List.unmodifiable(_eggProductions);
-  List<legacy.Slaughter> get slaughters => List.unmodifiable(_slaughters);
-  List<legacy.ChickenSale> get chickenSales => List.unmodifiable(_chickenSales);
-  List<legacy.EggSale> get eggSales => List.unmodifiable(_eggSales);
-  List<legacy.CulledBirdSale> get culledBirdSales => List.unmodifiable(_culledBirdSales);
+  List<EggProduction> get eggProductions => List.unmodifiable(_eggProductions);
+  List<Slaughter> get slaughters => List.unmodifiable(_slaughters);
+  List<ChickenSale> get chickenSales => List.unmodifiable(_chickenSales);
+  List<EggSale> get eggSales => List.unmodifiable(_eggSales);
+  List<CulledBirdSale> get culledBirdSales => List.unmodifiable(_culledBirdSales);
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -62,11 +55,11 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Batch Helpers ──
 
-  legacy.Batch? getBatchById(String id) {
+  PoultryBatch? getBatchById(String id) {
     try { return _batches.firstWhere((b) => b.id == id); } catch (_) { return null; }
   }
 
-  List<legacy.Batch> getBatchesByFarmId(String farmId) =>
+  List<PoultryBatch> getBatchesByFarmId(String farmId) =>
       _batches.where((b) => b.farmId == farmId).toList();
 
   List<Expense> getExpensesByBatchId(String batchId) =>
@@ -75,21 +68,21 @@ class PoultryProvider extends ChangeNotifier {
   List<Mortality> getMortalitiesByBatchId(String batchId) =>
       _mortalities.where((m) => m.batchId == batchId).toList();
 
-  List<legacy.Slaughter> getSlaughtersByBatchId(String batchId) =>
+  List<Slaughter> getSlaughtersByBatchId(String batchId) =>
       _slaughters.where((s) => s.batchId == batchId).toList();
 
-  List<legacy.EggProduction> getEggProductionsByBatchId(String batchId) =>
+  List<EggProduction> getEggProductionsByBatchId(String batchId) =>
       _eggProductions.where((p) => p.batchId == batchId).toList();
 
   // ── Batch CRUD ──
 
-  Future<void> addBatch(legacy.Batch b) async {
+  Future<void> addBatch(PoultryBatch b) async {
     await _repo.insertBatch(b);
     _batches.add(b);
     notifyListeners();
   }
 
-  Future<void> updateBatch(legacy.Batch b) async {
+  Future<void> updateBatch(PoultryBatch b) async {
     await _repo.updateBatch(b);
     final index = _batches.indexWhere((e) => e.id == b.id);
     if (index != -1) {
@@ -101,7 +94,6 @@ class PoultryProvider extends ChangeNotifier {
   Future<void> deleteBatch(String id) async {
     await _repo.deleteBatch(id);
     _batches.removeWhere((b) => b.id == id);
-    // Cascading is handled by DB foreign keys, clean local lists
     _expenses.removeWhere((e) => e.batchId == id);
     _mortalities.removeWhere((m) => m.batchId == id);
     _eggProductions.removeWhere((p) => p.batchId == id);
@@ -112,19 +104,11 @@ class PoultryProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Helper: update batch quantity ──
-
   Future<void> _adjustBatchQuantity(String batchId, int delta) async {
     final index = _batches.indexWhere((b) => b.id == batchId);
     if (index != -1) {
-      final b = _batches[index];
-      final updated = legacy.Batch(
-        id: b.id, farmId: b.farmId, name: b.name, type: b.type,
-        birdOrigin: b.birdOrigin, entryDate: b.entryDate,
-        initialQuantity: b.initialQuantity,
-        currentQuantity: b.currentQuantity + delta,
-        breedOrLineage: b.breedOrLineage, acquisitionCost: b.acquisitionCost,
-        status: b.status, notes: b.notes,
+      final updated = _batches[index].copyWithQuantity(
+        _batches[index].currentQuantity + delta,
       );
       await _repo.updateBatch(updated);
       _batches[index] = updated;
@@ -167,7 +151,7 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Egg Production CRUD ──
 
-  Future<void> addEggProduction(legacy.EggProduction p) async {
+  Future<void> addEggProduction(EggProduction p) async {
     await _repo.insertEggProduction(p);
     _eggProductions.add(p);
     notifyListeners();
@@ -181,7 +165,7 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Slaughter CRUD ──
 
-  Future<void> addSlaughter(legacy.Slaughter s) async {
+  Future<void> addSlaughter(Slaughter s) async {
     await _repo.insertSlaughter(s);
     _slaughters.add(s);
     await _adjustBatchQuantity(s.batchId, -s.slaughteredQuantity);
@@ -201,17 +185,17 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Chicken Sale CRUD ──
 
-  Future<void> addChickenSale(legacy.ChickenSale v) async {
+  Future<void> addChickenSale(ChickenSale v) async {
     await _repo.insertChickenSale(v);
     _chickenSales.add(v);
-    if (v.saleType == legacy_enums.ChickenSaleType.live) {
-      int soldQty = v.groups.fold(0, (sum, g) => sum + g.quantity);
+    if (v.saleType == ChickenSaleType.live) {
+      int soldQty = v.groups.fold(0, (s, g) => s + g.quantity);
       await _adjustBatchQuantity(v.batchId, -soldQty);
     }
     notifyListeners();
   }
 
-  Future<void> updateChickenSale(legacy.ChickenSale v) async {
+  Future<void> updateChickenSale(ChickenSale v) async {
     await _repo.updateChickenSale(v);
     final index = _chickenSales.indexWhere((s) => s.id == v.id);
     if (index != -1) {
@@ -224,8 +208,8 @@ class PoultryProvider extends ChangeNotifier {
     final index = _chickenSales.indexWhere((s) => s.id == id);
     if (index != -1) {
       final v = _chickenSales[index];
-      if (v.saleType == legacy_enums.ChickenSaleType.live) {
-        int soldQty = v.groups.fold(0, (sum, g) => sum + g.quantity);
+      if (v.saleType == ChickenSaleType.live) {
+        int soldQty = v.groups.fold(0, (s, g) => s + g.quantity);
         await _adjustBatchQuantity(v.batchId, soldQty);
       }
       await _repo.deleteChickenSale(id);
@@ -236,13 +220,13 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Egg Sale CRUD ──
 
-  Future<void> addEggSale(legacy.EggSale v) async {
+  Future<void> addEggSale(EggSale v) async {
     await _repo.insertEggSale(v);
     _eggSales.add(v);
     notifyListeners();
   }
 
-  Future<void> updateEggSale(legacy.EggSale v) async {
+  Future<void> updateEggSale(EggSale v) async {
     await _repo.updateEggSale(v);
     final index = _eggSales.indexWhere((s) => s.id == v.id);
     if (index != -1) {
@@ -259,14 +243,14 @@ class PoultryProvider extends ChangeNotifier {
 
   // ── Culled Bird Sale CRUD ──
 
-  Future<void> addCulledBirdSale(legacy.CulledBirdSale v) async {
+  Future<void> addCulledBirdSale(CulledBirdSale v) async {
     await _repo.insertCulledBirdSale(v);
     _culledBirdSales.add(v);
     await _adjustBatchQuantity(v.batchId, -v.quantity);
     notifyListeners();
   }
 
-  Future<void> updateCulledBirdSale(legacy.CulledBirdSale v) async {
+  Future<void> updateCulledBirdSale(CulledBirdSale v) async {
     await _repo.updateCulledBirdSale(v);
     final index = _culledBirdSales.indexWhere((s) => s.id == v.id);
     if (index != -1) {

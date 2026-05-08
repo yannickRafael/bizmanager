@@ -10,10 +10,9 @@ import '../../../core/models/mortality.dart';
 import '../../../core/widgets/confirm_delete_dialog.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../providers/poultry_provider.dart';
-import '../../../models/batch.dart';
-import '../../../models/enums.dart' hide BatchStatus, ExpenseType;
-import '../../../models/egg_production.dart';
-import '../../../models/slaughter.dart';
+import '../models/poultry_batch.dart';
+import '../models/poultry_enums.dart';
+import '../models/poultry_models.dart';
 
 /// Detailed batch view with 5 tabs: Summary, Expenses, Mortality, Production, Sales.
 class PoultryBatchDetail extends StatelessWidget {
@@ -72,7 +71,7 @@ class PoultryBatchDetail extends StatelessWidget {
 //  TAB 1: Summary
 // ══════════════════════════════════════════
 class _SummaryTab extends StatelessWidget {
-  final Batch batch;
+  final PoultryBatch batch;
   final PoultryProvider poultry;
   const _SummaryTab({required this.batch, required this.poultry});
 
@@ -117,7 +116,7 @@ class _SummaryTab extends StatelessWidget {
 //  TAB 2: Expenses
 // ══════════════════════════════════════════
 class _ExpensesTab extends StatelessWidget {
-  final Batch batch;
+  final PoultryBatch batch;
   final PoultryProvider poultry;
   final bool isClosed;
   const _ExpensesTab({required this.batch, required this.poultry, required this.isClosed});
@@ -254,7 +253,7 @@ class _ExpensesTab extends StatelessWidget {
 //  TAB 3: Mortality
 // ══════════════════════════════════════════
 class _MortalityTab extends StatelessWidget {
-  final Batch batch;
+  final PoultryBatch batch;
   final PoultryProvider poultry;
   final bool isClosed;
   const _MortalityTab({required this.batch, required this.poultry, required this.isClosed});
@@ -361,7 +360,7 @@ class _MortalityTab extends StatelessWidget {
 //  TAB 4: Production (eggs for layers)
 // ══════════════════════════════════════════
 class _ProductionTab extends StatelessWidget {
-  final Batch batch;
+  final PoultryBatch batch;
   final PoultryProvider poultry;
   final bool isClosed;
   const _ProductionTab({required this.batch, required this.poultry, required this.isClosed});
@@ -576,7 +575,7 @@ class _ProductionTab extends StatelessWidget {
 //  TAB 5: Sales summary for this batch
 // ══════════════════════════════════════════
 class _SalesTab extends StatelessWidget {
-  final Batch batch;
+  final PoultryBatch batch;
   final PoultryProvider poultry;
   const _SalesTab({required this.batch, required this.poultry});
 
