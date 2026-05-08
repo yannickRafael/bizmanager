@@ -21,6 +21,10 @@ abstract class BaseBatch {
   /// in the `individual_animals` table.
   final bool individualTrackingEnabled;
 
+  /// Known male count. Females = [femaleCount]. Unknown = [currentQuantity] - male - female.
+  final int maleCount;
+  final int femaleCount;
+
   const BaseBatch({
     required this.id,
     required this.farmId,
@@ -34,6 +38,8 @@ abstract class BaseBatch {
     required this.status,
     this.notes = '',
     this.individualTrackingEnabled = false,
+    this.maleCount = 0,
+    this.femaleCount = 0,
   });
 
   /// Create a copy with an updated quantity (used by mortality, sales, slaughter).
@@ -61,6 +67,8 @@ abstract class BaseBatch {
       'status': status.name,
       'notes': notes,
       'individualTrackingEnabled': individualTrackingEnabled ? 1 : 0,
+      'maleCount': maleCount,
+      'femaleCount': femaleCount,
     };
   }
 }

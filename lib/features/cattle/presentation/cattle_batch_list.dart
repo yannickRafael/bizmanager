@@ -68,7 +68,9 @@ class CattleBatchList extends StatelessWidget {
                           ),
                         ),
                         subtitle: Text(
-                          '${b.currentQuantity}/${b.initialQuantity} animais • ${farm?.name ?? "?"} • ${DateFormat('dd/MM/yy').format(b.entryDate)}'
+                          '${b.currentQuantity}/${b.initialQuantity} animais'
+                          '${(b.maleCount > 0 || b.femaleCount > 0) ? ' • ♂ ${b.maleCount} ♀ ${b.femaleCount}' : ''}'
+                          ' • ${farm?.name ?? "?"} • ${DateFormat('dd/MM/yy').format(b.entryDate)}'
                           '${isClosed ? " • ENCERRADO" : ""}',
                         ),
                         trailing: PopupMenuButton<String>(
@@ -127,6 +129,8 @@ class CattleBatchList extends StatelessWidget {
     final qtyCtrl = TextEditingController();
     final costCtrl = TextEditingController();
     final breedCtrl = TextEditingController();
+    final maleCtrl = TextEditingController();
+    final femaleCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
     String farmId = farms.first.id;
     CattlePurpose purpose = CattlePurpose.dual;
@@ -205,6 +209,26 @@ class CattleBatchList extends StatelessWidget {
                     controller: breedCtrl,
                     decoration: const InputDecoration(labelText: 'Raça / Linhagem'),
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: maleCtrl,
+                          decoration: const InputDecoration(labelText: '♂ Machos'),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextFormField(
+                          controller: femaleCtrl,
+                          decoration: const InputDecoration(labelText: '♀ Fêmeas'),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 20),
                   FilledButton(
                     onPressed: () {
@@ -220,6 +244,8 @@ class CattleBatchList extends StatelessWidget {
                           breedOrLineage: breedCtrl.text.trim(),
                           acquisitionCost: double.tryParse(costCtrl.text) ?? 0,
                           status: BatchStatus.active,
+                          maleCount: int.tryParse(maleCtrl.text) ?? 0,
+                          femaleCount: int.tryParse(femaleCtrl.text) ?? 0,
                           purpose: purpose,
                         ));
                         Navigator.pop(ctx);

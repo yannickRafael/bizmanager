@@ -17,6 +17,8 @@ class GoatBatch extends BaseBatch {
     required super.status,
     super.notes,
     super.individualTrackingEnabled,
+    super.maleCount,
+    super.femaleCount,
     required this.purpose,
   }) : super(animalType: AnimalType.goat);
 
@@ -26,6 +28,7 @@ class GoatBatch extends BaseBatch {
     initialQuantity: initialQuantity, currentQuantity: newQuantity,
     breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
     status: status, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
     purpose: purpose,
   );
 
@@ -35,6 +38,7 @@ class GoatBatch extends BaseBatch {
     initialQuantity: initialQuantity, currentQuantity: currentQuantity,
     breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
     status: newStatus, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
     purpose: purpose,
   );
 
@@ -56,6 +60,8 @@ class GoatBatch extends BaseBatch {
     status: BatchStatus.values.firstWhere((e) => e.name == map['status'], orElse: () => BatchStatus.active),
     notes: map['notes'] ?? '',
     individualTrackingEnabled: (map['individualTrackingEnabled'] ?? 0) == 1,
+    maleCount: map['maleCount'] ?? 0,
+    femaleCount: map['femaleCount'] ?? 0,
     purpose: GoatPurpose.values.firstWhere((e) => e.name == map['goatPurpose'], orElse: () => GoatPurpose.dual),
   );
 }

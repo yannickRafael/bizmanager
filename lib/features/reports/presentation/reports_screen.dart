@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../features/settings/providers/settings_provider.dart';
@@ -42,7 +43,13 @@ class ReportsScreen extends StatelessWidget {
     final totalProfit = totalRevenue - totalExpenses;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Relatórios Financeiros')),
+      appBar: AppBar(
+        title: const Text('Relatórios Financeiros'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.goNamed('home'),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

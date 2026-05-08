@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/client.dart';
@@ -19,7 +20,13 @@ class ClientDetailsScreen extends StatelessWidget {
 
     if (client == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Cliente')),
+        appBar: AppBar(
+          title: const Text('Cliente'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.goNamed('clients'),
+          ),
+        ),
         body: const Center(child: Text('Cliente não encontrado.')),
       );
     }
@@ -44,7 +51,13 @@ class ClientDetailsScreen extends StatelessWidget {
     final debt = totalOwed - totalPaid;
 
     return Scaffold(
-      appBar: AppBar(title: Text(client.name)),
+      appBar: AppBar(
+        title: Text(client.name),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.goNamed('clients'),
+        ),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

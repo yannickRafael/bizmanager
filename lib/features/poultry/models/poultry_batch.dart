@@ -18,6 +18,8 @@ class PoultryBatch extends BaseBatch {
     required super.status,
     super.notes,
     super.individualTrackingEnabled,
+    super.maleCount,
+    super.femaleCount,
     required this.type,
     required this.birdOrigin,
   }) : super(animalType: AnimalType.poultry);
@@ -28,6 +30,7 @@ class PoultryBatch extends BaseBatch {
     initialQuantity: initialQuantity, currentQuantity: newQuantity,
     breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
     status: status, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
     type: type, birdOrigin: birdOrigin,
   );
 
@@ -37,6 +40,7 @@ class PoultryBatch extends BaseBatch {
     initialQuantity: initialQuantity, currentQuantity: currentQuantity,
     breedOrLineage: breedOrLineage, acquisitionCost: acquisitionCost,
     status: newStatus, notes: notes, individualTrackingEnabled: individualTrackingEnabled,
+    maleCount: maleCount, femaleCount: femaleCount,
     type: type, birdOrigin: birdOrigin,
   );
 
@@ -62,6 +66,8 @@ class PoultryBatch extends BaseBatch {
     ),
     notes: map['notes'] ?? '',
     individualTrackingEnabled: (map['individualTrackingEnabled'] ?? 0) == 1,
+    maleCount: map['maleCount'] ?? 0,
+    femaleCount: map['femaleCount'] ?? 0,
     type: BatchType.values.firstWhere(
       (e) => e.name == map['type'],
       orElse: () => BatchType.meat,

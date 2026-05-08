@@ -23,7 +23,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -90,6 +90,8 @@ class DatabaseService {
         status TEXT NOT NULL DEFAULT 'active',
         notes TEXT,
         individualTrackingEnabled INTEGER NOT NULL DEFAULT 0,
+        maleCount INTEGER NOT NULL DEFAULT 0,
+        femaleCount INTEGER NOT NULL DEFAULT 0,
         -- Poultry-specific (nullable for other types)
         type TEXT,
         birdOrigin TEXT,
@@ -358,6 +360,11 @@ class DatabaseService {
       ]) {
         await db.execute('DROP TABLE IF EXISTS $table');
       }
+    }
+
+    if (oldVersion < 5) {
+      await _safeAddColumn(db, 'batches', 'maleCount', 'INTEGER NOT NULL DEFAULT 0');
+      await _safeAddColumn(db, 'batches', 'femaleCount', 'INTEGER NOT NULL DEFAULT 0');
     }
 
     if (oldVersion < 4) {
