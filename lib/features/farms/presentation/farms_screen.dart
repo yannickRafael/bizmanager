@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,7 +17,13 @@ class FarmsScreen extends StatelessWidget {
     final provider = context.watch<FarmProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Explorações')),
+      appBar: AppBar(
+        title: const Text('Explorações'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.goNamed('home'),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddFarmDialog(context),
         child: const Icon(Icons.add),

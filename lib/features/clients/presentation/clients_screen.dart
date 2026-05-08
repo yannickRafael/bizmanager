@@ -17,7 +17,13 @@ class ClientsScreen extends StatelessWidget {
     final provider = context.watch<ClientProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Clientes')),
+      appBar: AppBar(
+        title: const Text('Clientes'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.goNamed('home'),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddClientDialog(context),
         child: const Icon(Icons.person_add),
