@@ -105,6 +105,8 @@ class _SummaryTab extends StatelessWidget {
           _InfoCard(items: [
             _KV('Quantidade Inicial', '${batch.initialQuantity}'),
             _KV('Quantidade Actual', '${batch.currentQuantity}'),
+            _KV('♂ Machos', '${batch.maleCount}'),
+            _KV('♀ Fêmeas', '${batch.femaleCount}'),
             _KV('Mortalidade', '$totalMortality (${mortalityRate.toStringAsFixed(1)}%)'),
             _KV('Custo Aquisição', '$currency${batch.acquisitionCost.toStringAsFixed(2)}'),
             _KV('Total Despesas', '$currency${totalExpenses.toStringAsFixed(2)}'),
@@ -298,7 +300,7 @@ class _MortalityTab extends StatelessWidget {
                     final m = records[i];
                     return ListTile(
                       leading: const Icon(Icons.heart_broken, color: Colors.orange),
-                      title: Text('${m.quantity} animais'),
+                      title: Text('${m.quantity} animais${m.sex != null ? ' • ${m.sex}' : ''}'),
                       subtitle: Text('${m.cause ?? "Sem causa"} • ${DateFormat('dd/MM/yyyy').format(m.date)}'),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
@@ -319,54 +321,70 @@ class _MortalityTab extends StatelessWidget {
     final qtyCtrl = TextEditingController();
     final causeCtrl = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    String? sex;
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Registar Mortalidade'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: qtyCtrl,
-                decoration: const InputDecoration(labelText: 'Quantidade *'),
-                keyboardType: TextInputType.number,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Obrigatório';
-                  final qty = int.tryParse(v);
-                  if (qty == null || qty <= 0) return 'Inválido';
-                  if (qty > batch.currentQuantity) return 'Excede quantidade actual';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: causeCtrl,
-                decoration: const InputDecoration(labelText: 'Causa'),
-              ),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: const Text('Registar Mortalidade'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: qtyCtrl,
+                  decoration: const InputDecoration(labelText: 'Quantidade *'),
+                  keyboardType: TextInputType.number,
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Obrigatório';
+                    final qty = int.tryParse(v);
+                    if (qty == null || qty <= 0) return 'Inválido';
+                    if (qty > batch.currentQuantity) return 'Excede quantidade actual';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String?>(
+                  value: sex,
+                  decoration: const InputDecoration(labelText: 'Sexo'),
+                  items: const [
+                    DropdownMenuItem(value: null, child: Text('Não especificado')),
+                    DropdownMenuItem(value: 'Macho', child: Text('Macho')),
+                    DropdownMenuItem(value: 'Fêmea', child: Text('Fêmea')),
+                    DropdownMenuItem(value: 'Misto', child: Text('Misto')),
+                  ],
+                  onChanged: (v) => setState(() => sex = v),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: causeCtrl,
+                  decoration: const InputDecoration(labelText: 'Causa'),
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  context.read<GoatProvider>().addMortality(Mortality(
+                    id: const Uuid().v4(),
+                    batchId: batch.id,
+                    quantity: int.parse(qtyCtrl.text),
+                    sex: sex,
+                    cause: causeCtrl.text.trim().isNotEmpty ? causeCtrl.text.trim() : null,
+                    date: DateTime.now(),
+                  ));
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Registar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
-          FilledButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                context.read<GoatProvider>().addMortality(Mortality(
-                  id: const Uuid().v4(),
-                  batchId: batch.id,
-                  quantity: int.parse(qtyCtrl.text),
-                  cause: causeCtrl.text.trim().isNotEmpty ? causeCtrl.text.trim() : null,
-                  date: DateTime.now(),
-                ));
-                Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Registar'),
-          ),
-        ],
       ),
     );
   }

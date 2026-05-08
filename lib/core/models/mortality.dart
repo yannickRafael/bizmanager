@@ -4,6 +4,7 @@ class Mortality {
   final String batchId;
   final int quantity;
   final String? cause;
+  final String? sex;
   final DateTime date;
 
   const Mortality({
@@ -11,6 +12,7 @@ class Mortality {
     required this.batchId,
     required this.quantity,
     this.cause,
+    this.sex,
     required this.date,
   });
 
@@ -20,6 +22,7 @@ class Mortality {
       'batchId': batchId,
       'quantity': quantity,
       'cause': cause,
+      'sex': sex,
       'date': date.toIso8601String(),
     };
   }
@@ -30,6 +33,7 @@ class Mortality {
       batchId: map['batchId'],
       quantity: map['quantity'],
       cause: map['cause'],
+      sex: map['sex'],
       date: DateTime.parse(map['date']),
     );
   }

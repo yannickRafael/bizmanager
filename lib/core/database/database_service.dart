@@ -23,7 +23,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _onUpgrade,
       onConfigure: (db) async {
@@ -122,6 +122,7 @@ class DatabaseService {
         batchId TEXT NOT NULL,
         quantity INTEGER NOT NULL,
         cause TEXT,
+        sex TEXT,
         date TEXT NOT NULL,
         FOREIGN KEY (batchId) REFERENCES batches(id) ON DELETE CASCADE
       )
@@ -360,6 +361,10 @@ class DatabaseService {
       ]) {
         await db.execute('DROP TABLE IF EXISTS $table');
       }
+    }
+
+    if (oldVersion < 6) {
+      await _safeAddColumn(db, 'mortality_records', 'sex', 'TEXT');
     }
 
     if (oldVersion < 5) {

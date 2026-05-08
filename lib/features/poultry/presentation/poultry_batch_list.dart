@@ -117,7 +117,6 @@ class PoultryBatchList extends StatelessWidget {
     }
 
     final nameCtrl = TextEditingController();
-    final qtyCtrl = TextEditingController();
     final costCtrl = TextEditingController();
     final breedCtrl = TextEditingController();
     final maleCtrl = TextEditingController();
@@ -193,12 +192,12 @@ class PoultryBatchList extends StatelessWidget {
                     children: [
                       Expanded(
                         child: TextFormField(
-                          controller: qtyCtrl,
-                          decoration: const InputDecoration(labelText: 'Quantidade *'),
+                          controller: maleCtrl,
+                          decoration: const InputDecoration(labelText: '♂ Machos *'),
                           keyboardType: TextInputType.number,
                           validator: (v) {
-                            if (v == null || v.isEmpty) return 'Obrigatório';
-                            if (int.tryParse(v) == null || int.parse(v) <= 0) return 'Inválido';
+                            final n = int.tryParse(v ?? '');
+                            if (n == null || n < 0) return 'Inválido';
                             return null;
                           },
                         ),
@@ -206,9 +205,14 @@ class PoultryBatchList extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: TextFormField(
-                          controller: costCtrl,
-                          decoration: const InputDecoration(labelText: 'Custo Aquisição'),
+                          controller: femaleCtrl,
+                          decoration: const InputDecoration(labelText: '♀ Fêmeas *'),
                           keyboardType: TextInputType.number,
+                          validator: (v) {
+                            final n = int.tryParse(v ?? '');
+                            if (n == null || n < 0) return 'Inválido';
+                            return null;
+                          },
                         ),
                       ),
                     ],
@@ -219,30 +223,24 @@ class PoultryBatchList extends StatelessWidget {
                     decoration: const InputDecoration(labelText: 'Raça / Linhagem'),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: maleCtrl,
-                          decoration: const InputDecoration(labelText: '♂ Machos'),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: femaleCtrl,
-                          decoration: const InputDecoration(labelText: '♀ Fêmeas'),
-                          keyboardType: TextInputType.number,
-                        ),
-                      ),
-                    ],
+                  TextFormField(
+                    controller: costCtrl,
+                    decoration: const InputDecoration(labelText: 'Custo Aquisição'),
+                    keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 20),
                   FilledButton(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
-                        final qty = int.parse(qtyCtrl.text);
+                        final males = int.tryParse(maleCtrl.text) ?? 0;
+                        final females = int.tryParse(femaleCtrl.text) ?? 0;
+                        final qty = males + females;
+                        if (qty <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Indique pelo menos um animal.')),
+                          );
+                          return;
+                        }
                         context.read<PoultryProvider>().addBatch(PoultryBatch(
                           id: const Uuid().v4(),
                           farmId: farmId,
@@ -255,8 +253,8 @@ class PoultryBatchList extends StatelessWidget {
                           breedOrLineage: breedCtrl.text.trim(),
                           acquisitionCost: double.tryParse(costCtrl.text) ?? 0,
                           status: BatchStatus.active,
-                          maleCount: int.tryParse(maleCtrl.text) ?? 0,
-                          femaleCount: int.tryParse(femaleCtrl.text) ?? 0,
+                          maleCount: males,
+                          femaleCount: females,
                         ));
                         Navigator.pop(ctx);
                       }
