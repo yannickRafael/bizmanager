@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../repositories/partner_repository.dart';
-import '../../core/models/partner.dart';
+import 'package:farma/core/models/partner.dart';
 
 /// Manages partner state. Replaces the partner CRUD from the old DataManager.
 class PartnerProvider extends ChangeNotifier {

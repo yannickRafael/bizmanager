@@ -8,7 +8,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/models/expense.dart';
 import '../../../core/models/mortality.dart';
 import '../../../core/widgets/confirm_delete_dialog.dart';
-import '../../../core/widgets/loading_widget.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../providers/cattle_provider.dart';
 import '../models/cattle_batch.dart';

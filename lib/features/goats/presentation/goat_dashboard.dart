@@ -33,7 +33,6 @@ class GoatDashboard extends StatelessWidget {
     final totalRevenue = goat.goatSales.fold<double>(0.0, (double s, x) => s + x.total)
         + goat.milkSales.fold<double>(0.0, (double s, x) => s + x.total);
     final totalExpenses = goat.expenses.fold<double>(0.0, (double s, e) => s + e.amount);
-    final totalMortality = goat.mortalities.fold<int>(0, (int s, m) => s + m.quantity);
     final totalMilk = goat.milkProductions.fold<double>(0.0, (double s, p) => s + p.quantityLiters);
 
     return Scaffold(

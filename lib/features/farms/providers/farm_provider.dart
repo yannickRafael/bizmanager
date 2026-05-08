@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../repositories/farm_repository.dart';
-import '../../core/models/farm.dart';
+import 'package:farma/core/models/farm.dart';
 
 /// Manages farm state. Replaces the farm CRUD from the old DataManager.
 class FarmProvider extends ChangeNotifier {

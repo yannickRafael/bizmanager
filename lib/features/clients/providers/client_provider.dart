@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../repositories/client_repository.dart';
-import '../../core/models/client.dart';
+import 'package:farma/core/models/client.dart';
 
 /// Manages client state. Replaces the client CRUD from the old DataManager.
 class ClientProvider extends ChangeNotifier {

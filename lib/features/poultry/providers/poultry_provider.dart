@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../repositories/poultry_repository.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
 
 // Legacy models (until Phase 4 creates PoultryBatch)
-import '../../models/batch.dart' as legacy;
-import '../../models/egg_production.dart' as legacy;
-import '../../models/slaughter.dart' as legacy;
-import '../../models/sale.dart' as legacy;
-import '../../models/enums.dart' as legacy_enums;
+import 'package:farma/models/batch.dart' as legacy;
+import 'package:farma/models/egg_production.dart' as legacy;
+import 'package:farma/models/slaughter.dart' as legacy;
+import 'package:farma/models/sale.dart' as legacy;
+import 'package:farma/models/enums.dart' as legacy_enums;
 
 /// Manages all poultry-specific state.
 /// Replaces the poultry parts of the old DataManager God class.

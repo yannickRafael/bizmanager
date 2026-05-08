@@ -1,6 +1,6 @@
-import '../../core/database/database_service.dart';
-import '../../core/models/farm.dart';
-import '../../core/repositories/base_repository.dart';
+import 'package:farma/core/database/database_service.dart';
+import 'package:farma/core/models/farm.dart';
+import 'package:farma/core/repositories/base_repository.dart';
 
 class FarmRepository implements BaseRepository<Farm> {
   final _db = DatabaseService.instance;

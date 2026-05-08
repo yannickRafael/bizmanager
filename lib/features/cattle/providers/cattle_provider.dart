@@ -4,7 +4,6 @@ import 'package:farma/core/models/expense.dart';
 import 'package:farma/core/models/mortality.dart';
 import 'package:farma/features/cattle/models/cattle_batch.dart';
 import 'package:farma/features/cattle/models/cattle_models.dart';
-import 'package:farma/core/constants/app_constants.dart';
 
 /// Manages all cattle-specific state.
 class CattleProvider extends ChangeNotifier {

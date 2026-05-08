@@ -1,14 +1,12 @@
-import 'dart:convert';
-import '../../core/database/database_service.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
+import 'package:farma/core/database/database_service.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
 
-// Poultry-specific models (will be created in Phase 4, using old models for now)
-import '../../models/enums.dart' as legacy;
-import '../../models/batch.dart' as legacy;
-import '../../models/egg_production.dart' as legacy;
-import '../../models/slaughter.dart' as legacy;
-import '../../models/sale.dart' as legacy;
+// Legacy models (poultry still uses these until migration)
+import 'package:farma/models/batch.dart' as legacy;
+import 'package:farma/models/egg_production.dart' as legacy;
+import 'package:farma/models/slaughter.dart' as legacy;
+import 'package:farma/models/sale.dart' as legacy;
 
 /// Repository for all poultry-specific data access.
 ///

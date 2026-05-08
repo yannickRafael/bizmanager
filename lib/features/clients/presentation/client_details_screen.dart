@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/models/client.dart';
-import '../../../core/widgets/loading_widget.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/poultry/providers/poultry_provider.dart';
 import '../providers/client_provider.dart';

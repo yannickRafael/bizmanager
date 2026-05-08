@@ -108,10 +108,12 @@ class PoultryDashboard extends StatelessWidget {
                   icon: const Icon(Icons.inventory_2),
                   label: const Text('Lotes'),
                 ),
-                FilledButton.tonalButton(
+                FilledButton.tonal(
                   onPressed: () => context.goNamed('poultrySales'),
-                  icon: const Icon(Icons.point_of_sale),
-                  label: const Text('Vendas'),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [Icon(Icons.point_of_sale), SizedBox(width: 8), Text('Vendas')],
+                  ),
                 ),
               ],
             ),
@@ -141,19 +143,3 @@ class PoultryDashboard extends StatelessWidget {
   }
 }
 
-/// Extension to make FilledButton.tonal with icon easier
-extension _FilledButtonTonal on FilledButton {
-  static Widget tonalButton({
-    required VoidCallback onPressed,
-    required Widget icon,
-    required Widget label,
-  }) {
-    return FilledButton.tonal(
-      onPressed: onPressed,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [icon, const SizedBox(width: 8), label],
-      ),
-    );
-  }
-}

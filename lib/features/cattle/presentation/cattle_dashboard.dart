@@ -33,7 +33,6 @@ class CattleDashboard extends StatelessWidget {
     final totalRevenue = cattle.cattleSales.fold<double>(0.0, (double s, x) => s + x.total)
         + cattle.milkSales.fold<double>(0.0, (double s, x) => s + x.total);
     final totalExpenses = cattle.expenses.fold<double>(0.0, (double s, e) => s + e.amount);
-    final totalMortality = cattle.mortalities.fold<int>(0, (int s, m) => s + m.quantity);
     final totalMilk = cattle.milkProductions.fold<double>(0.0, (double s, p) => s + p.quantityLiters);
 
     return Scaffold(

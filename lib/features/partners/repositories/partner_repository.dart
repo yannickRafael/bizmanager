@@ -1,6 +1,6 @@
-import '../../core/database/database_service.dart';
-import '../../core/models/partner.dart';
-import '../../core/repositories/base_repository.dart';
+import 'package:farma/core/database/database_service.dart';
+import 'package:farma/core/models/partner.dart';
+import 'package:farma/core/repositories/base_repository.dart';
 
 class PartnerRepository implements BaseRepository<Partner> {
   final _db = DatabaseService.instance;

@@ -4,7 +4,6 @@ import 'package:farma/core/models/expense.dart';
 import 'package:farma/core/models/mortality.dart';
 import 'package:farma/features/goats/models/goat_batch.dart';
 import 'package:farma/features/goats/models/goat_models.dart';
-import 'package:farma/core/constants/app_constants.dart';
 
 /// Manages all goat-specific state.
 class GoatProvider extends ChangeNotifier {

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
-
 import '../../../core/theme/app_theme.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../features/settings/providers/settings_provider.dart';
 import '../../../features/poultry/providers/poultry_provider.dart';
 import '../../../features/cattle/providers/cattle_provider.dart';
@@ -25,8 +22,9 @@ class ReportsScreen extends StatelessWidget {
     final goats = context.watch<GoatProvider>();
 
     // Poultry totals
-    final pRevenue = poultry.sales.fold<double>(0.0, (s, x) => s + x.totalValue) +
-                     poultry.eggSales.fold<double>(0.0, (s, x) => s + x.totalValue);
+    final pRevenue = poultry.chickenSales.fold<double>(0.0, (s, x) => s + x.total) +
+                     poultry.eggSales.fold<double>(0.0, (s, x) => s + x.total) +
+                     poultry.culledBirdSales.fold<double>(0.0, (s, x) => s + x.total);
     final pExpenses = poultry.expenses.fold<double>(0.0, (s, x) => s + x.amount);
 
     // Cattle totals
@@ -97,7 +95,7 @@ class ReportsScreen extends StatelessWidget {
               revenue: gRevenue,
               expenses: gExpenses,
               color: AppTheme.goatColor,
-              icon: Icons.Agriculture, // Use Agriculture or pets
+              icon: Icons.agriculture,
               currency: currency,
             ),
 
