@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/splash/presentation/splash_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/farms/presentation/farms_screen.dart';
 import '../../features/clients/presentation/clients_screen.dart';
@@ -31,8 +32,15 @@ import '../../features/goats/presentation/goat_sales_screen.dart';
 /// Centralized routing configuration using go_router.
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     routes: [
+      // ── Splash ──
+      GoRoute(
+        path: '/splash',
+        name: 'splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       // ── Home ──
       GoRoute(
         path: '/',
