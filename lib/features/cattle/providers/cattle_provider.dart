@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../repositories/cattle_repository.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
-import '../models/cattle_batch.dart';
-import '../models/cattle_models.dart';
+import 'package:farma/features/cattle/repositories/cattle_repository.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
+import 'package:farma/features/cattle/models/cattle_batch.dart';
+import 'package:farma/features/cattle/models/cattle_models.dart';
+import 'package:farma/core/constants/app_constants.dart';
 
 /// Manages all cattle-specific state.
 class CattleProvider extends ChangeNotifier {
@@ -55,6 +56,18 @@ class CattleProvider extends ChangeNotifier {
 
   List<CattleBatch> getBatchesByFarmId(String farmId) =>
       _batches.where((b) => b.farmId == farmId).toList();
+
+  List<Expense> getExpensesByBatchId(String batchId) =>
+      _expenses.where((e) => e.batchId == batchId).toList();
+
+  List<Mortality> getMortalitiesByBatchId(String batchId) =>
+      _mortalities.where((m) => m.batchId == batchId).toList();
+
+  List<MilkProduction> getMilkProductionsByBatchId(String batchId) =>
+      _milkProductions.where((p) => p.batchId == batchId).toList();
+
+  List<CalfBirth> getCalfBirthsByBatchId(String batchId) =>
+      _calfBirths.where((c) => c.batchId == batchId).toList();
 
   // ── Batch CRUD ──
 

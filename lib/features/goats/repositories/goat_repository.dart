@@ -1,8 +1,8 @@
-import '../../core/database/database_service.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
-import 'models/goat_batch.dart';
-import 'models/goat_models.dart';
+import 'package:farma/core/database/database_service.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
+import 'package:farma/features/goats/models/goat_batch.dart';
+import 'package:farma/features/goats/models/goat_models.dart';
 
 /// Repository for all goat-specific data access.
 class GoatRepository {

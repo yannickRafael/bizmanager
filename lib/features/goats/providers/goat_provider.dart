@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import '../repositories/goat_repository.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
-import '../models/goat_batch.dart';
-import '../models/goat_models.dart';
+import 'package:farma/features/goats/repositories/goat_repository.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
+import 'package:farma/features/goats/models/goat_batch.dart';
+import 'package:farma/features/goats/models/goat_models.dart';
+import 'package:farma/core/constants/app_constants.dart';
 
 /// Manages all goat-specific state.
 class GoatProvider extends ChangeNotifier {
@@ -54,6 +55,18 @@ class GoatProvider extends ChangeNotifier {
 
   List<GoatBatch> getBatchesByFarmId(String farmId) =>
       _batches.where((b) => b.farmId == farmId).toList();
+
+  List<Expense> getExpensesByBatchId(String batchId) =>
+      _expenses.where((e) => e.batchId == batchId).toList();
+
+  List<Mortality> getMortalitiesByBatchId(String batchId) =>
+      _mortalities.where((m) => m.batchId == batchId).toList();
+
+  List<GoatMilkProduction> getMilkProductionsByBatchId(String batchId) =>
+      _milkProductions.where((p) => p.batchId == batchId).toList();
+
+  List<KidBirth> getKidBirthsByBatchId(String batchId) =>
+      _kidBirths.where((k) => k.batchId == batchId).toList();
 
   // ── Batch CRUD ──
 

@@ -1,8 +1,8 @@
-import '../../core/database/database_service.dart';
-import '../../core/models/expense.dart';
-import '../../core/models/mortality.dart';
-import 'models/cattle_batch.dart';
-import 'models/cattle_models.dart';
+import 'package:farma/core/database/database_service.dart';
+import 'package:farma/core/models/expense.dart';
+import 'package:farma/core/models/mortality.dart';
+import 'package:farma/features/cattle/models/cattle_batch.dart';
+import 'package:farma/features/cattle/models/cattle_models.dart';
 
 /// Repository for all cattle-specific data access.
 class CattleRepository {
